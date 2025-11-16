@@ -116,7 +116,7 @@ if strcmpi(x,'full')
 end
 
 if strcmpi(method,'auto')
-    if ~s && length(unique(w))==1 % no s and only one unique weight
+    if ~s && isscalar(unique(w)) % no s and only one unique weight
         % ncx2 fallback
         if (sign(unique(w))==1 && strcmpi(side,'lower')) || (sign(unique(w))==-1 && strcmpi(side,'upper'))
             p=ncx2cdf((x-m)/unique(w),sum(k),sum(lambda));

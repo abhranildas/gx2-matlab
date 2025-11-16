@@ -9,7 +9,7 @@ addRequired(parser,'lambda',@(x) isreal(x) && isrow(x));
 addRequired(parser,'m',@(x) isreal(x) && isscalar(x));
 addOptional(parser,'side','lower',@(x) strcmpi(x,'lower') || strcmpi(x,'upper') );
 addParameter(parser,'output','cdf',@(x) strcmpi(x,'cdf') || strcmpi(x,'pdf') );
-addParameter(parser,'n_ruben',1e2,@(x) ismember(x,1:x));
+addParameter(parser,'n_ruben',1e3,@(x) ismember(x,1:x));
 
 parse(parser,x,w,k,lambda,m,varargin{:});
 side=parser.Results.side;
