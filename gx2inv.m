@@ -60,7 +60,7 @@ function x=gx2inv(p,w,k,lambda,s,m,varargin)
 
     side=parser.Results.side;
 
-    if ~s && length(unique(w))==1 && all(p>0)
+    if ~s && isscalar(unique(w)) && all(p>0)
         % native ncx2 fallback
         if strcmpi(side,'upper')
             p=1-p;
