@@ -1,4 +1,4 @@
-function [p,p_rel_err]=gx2_ellipse(x,w,r,lambda,m,varargin)
+function [p,p_rel_err]=gx2_ellipse(x,w,k,lambda,m,varargin)
 
 parser=inputParser;
 parser.KeepUnmatched=true;
@@ -11,7 +11,7 @@ addOptional(parser,'side','lower',@(x) strcmpi(x,'lower') || strcmpi(x,'upper') 
 addParameter(parser,'output','cdf',@(x) strcmpi(x,'cdf') || strcmpi(x,'pdf') );
 addParameter(parser,'x_scale','linear',@(x) strcmpi(x,'linear') || strcmpi(x,'log') );
 
-parse(parser,x,w,r,lambda,m,varargin{:});
+parse(parser,x,w,k,lambda,m,varargin{:});
 side=parser.Results.side;
 x_scale=parser.Results.x_scale;
 w_pos=true;
@@ -27,23 +27,15 @@ if all(w<0)
 end
 
 % find ellipse parameters
-ellipse_center=arrayfun(@(lambda,k) [sqrt(lambda) zeros(1,k-1)],lambda,r,'un',0);
+ellipse_center=arrayfun(@(lambda,k) [sqrt(lambda) zeros(1,k-1)],lambda,k,'un',0);
 ellipse_center=[ellipse_center{:}];
-ellipse_weights=arrayfun(@(w,k) w*ones(1,k),w,r,'un',0);
+ellipse_weights=arrayfun(@(w,k) w*ones(1,k),w,k,'un',0);
 ellipse_weights=[ellipse_weights{:}];
 
-dim=sum(r);
-% factor corr. to the density of the chosen point:
-% if norm(ellipse_center) % if non-central
-%     point_factor=exp(-norm(ellipse_center)^2/2);
-% else % if central
-%     point_factor=exp(-x_flat/(4*min(ellipse_weights)));   
-% end
-
-% common factor to cdf and pdf:
-% a=point_factor/(2^(dim/2)*gamma(dim/2+1)*sqrt(prod(ellipse_weights)));
+dim=sum(k);
+% common factor to cdf and pdf (multinormal density at the ellipse center
+% times the per-unit-x ellipse volume factor):
 a=exp(-norm(ellipse_center)^2/2)/(2^(dim/2)*gamma(dim/2+1)*sqrt(prod(ellipse_weights)));
-% ellipse_vol=x_flat.^(dim/2)*pi^(dim/2)/(gamma(dim/2+1)*sqrt(prod(ellipse_weights)));
 
 if strcmpi(x_scale,'linear')
     x_eff=max(x_flat-m,0); % effective x value from the tail
@@ -60,12 +52,6 @@ if strcmpi(x_scale,'linear')
 else
     % compute log p for log x
     log10_x=x_flat;
-    % factor corr. to the density of the chosen point:
-    % if norm(ellipse_center) % if non-central
-    %     point_factor=norm(ellipse_center)^2;
-    % else % if central
-    %     point_factor=-10.^log10_x/(2*min(ellipse_weights));
-    % end
 
     if strcmpi(parser.Results.output,'cdf')
         log10_p=dim/2*(log10_x-log10(2)) - norm(ellipse_center)^2/log(100) - log10(gamma(dim/2+1)) - sum(log10(ellipse_weights))/2;
@@ -79,16 +65,17 @@ end
 
 if norm(ellipse_center) % if non-central
     if strcmpi(x_scale,'linear')
-        r=sqrt(x_eff)/sqrt(sum(ellipse_center.^2.*ellipse_weights));
-        p_rel_err=norm(ellipse_center)^2*r;
+        radius_ratio=sqrt(x_eff)/sqrt(sum(ellipse_center.^2.*ellipse_weights));
+        p_rel_err=norm(ellipse_center)^2*radius_ratio;
         % compute log (rel err) for log x
     else
         p_rel_err=2*log10(norm(ellipse_center))+log10_x/2-log10(sum(ellipse_center.^2.*ellipse_weights))/2;
     end
 else % if central
-    p_rel_err=x_eff/2*min(ellipse_weights);
-    % compute log (rel err) for log x
-    if strcmpi(x_scale,'log')
+    if strcmpi(x_scale,'linear')
+        p_rel_err=x_eff/(2*min(ellipse_weights));
+    else
+        % compute log (rel err) for log x
         p_rel_err=log10_x-log10(2*min(ellipse_weights));
     end
 end

@@ -49,9 +49,9 @@ function x=gx2inv(p,w,k,lambda,s,m,varargin)
     parser=inputParser;
     parser.KeepUnmatched=true;
     addRequired(parser,'p',@(x) isreal(x) && all(x<=1));
-    addRequired(parser,'w',@(x) isreal(x));
-    addRequired(parser,'k',@(x) isreal(x));
-    addRequired(parser,'lambda',@(x) isreal(x));
+    addRequired(parser,'w',@(x) isreal(x) && isrow(x));
+    addRequired(parser,'k',@(x) isreal(x) && isrow(x));
+    addRequired(parser,'lambda',@(x) isreal(x) && isrow(x));
     addRequired(parser,'s',@(x) isreal(x) && isscalar(x));
     addRequired(parser,'m',@(x) isreal(x) && isscalar(x));
     addOptional(parser,'side','lower',@(x) strcmpi(x,'lower') || strcmpi(x,'upper') );
@@ -60,16 +60,17 @@ function x=gx2inv(p,w,k,lambda,s,m,varargin)
 
     side=parser.Results.side;
 
-    if ~s && isscalar(unique(w)) && all(p>0)
+    w_unique=unique(w);
+    if ~s && isscalar(w_unique) && all(p>0)
         % native ncx2 fallback
         if strcmpi(side,'upper')
             p=1-p;
         end
-        if sign(unique(w))==1
-            x=ncx2inv(p,sum(k),sum(lambda))*unique(w)+m;
-        elseif sign(unique(w))==-1
-            x=ncx2inv(1-p,sum(k),sum(lambda))*unique(w)+m;
-        elseif unique(w)==0
+        if sign(w_unique)==1
+            x=ncx2inv(p,sum(k),sum(lambda))*w_unique+m;
+        elseif sign(w_unique)==-1
+            x=ncx2inv(1-p,sum(k),sum(lambda))*w_unique+m;
+        elseif w_unique==0
             x=0;
         end
     else

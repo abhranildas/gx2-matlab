@@ -54,13 +54,10 @@ function r=gx2rnd(w,k,lambda,s,m,varargin)
     method=parser.Results.method;
 
     if strcmpi(method,'sum')
-        ncxs=arrayfun(@(w,k,lambda) w*ncx2rnd(k,lambda,sz),w,k,lambda,'un',0);
-
-        r=zeros(size(ncxs{1}));
-        for i=1:length(ncxs)
-            r=r+ncxs{i};
+        r=normrnd(m,s,sz);
+        for i=1:numel(w)
+            r=r+w(i)*ncx2rnd(k(i),lambda(i),sz);
         end
-        r=r+normrnd(m,s,sz);
     elseif strcmpi(method,'norm_quad')
         % find the quadratic form of the standard multinormal
         quad=gx2_to_norm_quad_params(w,k,lambda,s,m);

@@ -81,6 +81,7 @@ elseif strcmpi(precision,'log')
     % find the roots where value was tiny.
     % for prob, these are where Phibar_small was tiny, or where they weren't tiny
     % individually but cancelled across the two roots
+    if nnz(tiny_probs) % only do the log-domain work if any tiny values exist
     tiny_probs=repmat(tiny_probs,[1 1 2]);
     z_tiny=nan(size(z));
     z_tiny(tiny_probs)=z(tiny_probs);
@@ -107,31 +108,6 @@ elseif strcmpi(precision,'log')
         z_tiny_hi=abs(z_tiny)>z_med;
         p_tiny(z_tiny_hi)=(dim-2)*log10(abs(z_tiny(z_tiny_hi)))-z_tiny(z_tiny_hi).^2/(2*log(10))-log10(gamma(dim/2)*2^(dim/2-1));
 
-        % log sum exp of tiny Phibar smalls with positive and negative signs:
-        % log_Phibar_plus=nan(n_levels,1);
-        % log_Phibar_minus=nan(n_levels,1);
-        % for level=1:n_levels
-        %     log_Phibar_small_thislevel=log_Phibar_small(level,:,:);
-        %     log_Phibar_plus(level)=log_sum_exp(log_Phibar_small_thislevel(z_tiny_signs(level,:,:)==1));
-        %     log_Phibar_minus(level)=log_sum_exp(log_Phibar_small_thislevel(z_tiny_signs(level,:,:)==-1));
-        % end
-        %
-        % % now subtract minus from plus:
-        % % 1. sign:
-        % p_tiny_sign=2*((log_Phibar_plus>log_Phibar_minus)-.5);
-        %
-        % % 2. magnitude:
-        %
-        % % first find max and min of each pair element-wise
-        % max_log=max(log_Phibar_plus,log_Phibar_minus);
-        % min_log=min(log_Phibar_plus,log_Phibar_minus);
-        %
-        % % then compute log10(|a - b|) using the formula
-        % log_Phibar_abs=max_log + log10(abs(1 - 10.^(min_log - max_log)));
-        % log_Phibar_abs(min_log==max_log)=-inf;
-        % p_tiny_sum=p_tiny_sign.*log_Phibar_abs; % combine sign with the log
-        % p_tiny_sum(log_Phibar_abs==-inf)=-inf;
-
         % combine magnitude and sign
         signed_p_tiny=p_tiny.*z_tiny_signs;
 
@@ -144,6 +120,9 @@ elseif strcmpi(precision,'log')
         % now divide by quad slope and sum using log sum exp
         p_tiny_sum=signed_log_sum_exp(p_tiny,3)-log10(2*quad_slope);
         p_tiny_sum=signed_log_sum_exp(p_tiny_sum,2);
+    end
+    else % no tiny values exist; nothing to add in the log domain
+        p_tiny_sum=-inf(n_levels,1);
     end
 
 

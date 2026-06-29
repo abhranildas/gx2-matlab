@@ -67,7 +67,7 @@ function [p,p_err,x_grid]=gx2cdf(x,w,k,lambda,s,m,varargin)
 % gpu_batch no. of rays to compute on each GPU batch. 0 to use CPU.
 %
 % Options for Ruben method:
-% n_ruben   no. of terms in Ruben's series. Larger=more accurate. Default=100.
+% n_ruben   no. of terms in Ruben's series. Larger=more accurate. Default=1000.
 %
 % Options for ifft method:
 % span      span of x over which to compute the IFFT. Larger=more accurate.
@@ -99,9 +99,9 @@ function [p,p_err,x_grid]=gx2cdf(x,w,k,lambda,s,m,varargin)
 parser = inputParser;
 parser.KeepUnmatched = true;
 addRequired(parser,'x',@(x) isreal(x) || strcmpi(x,'full'));
-addRequired(parser,'w',@(x) isreal(x));
-addRequired(parser,'k',@(x) isreal(x));
-addRequired(parser,'lambda',@(x) isreal(x));
+addRequired(parser,'w',@(x) isreal(x) && isrow(x));
+addRequired(parser,'k',@(x) isreal(x) && isrow(x));
+addRequired(parser,'lambda',@(x) isreal(x) && isrow(x));
 addRequired(parser,'s',@(x) isreal(x) && isscalar(x));
 addRequired(parser,'m',@(x) isreal(x) && isscalar(x));
 addOptional(parser,'side','lower',@(x) strcmpi(x,'lower') || strcmpi(x,'upper') );
@@ -111,17 +111,22 @@ parse(parser,x,w,k,lambda,s,m,varargin{:});
 method=parser.Results.method;
 side=parser.Results.side;
 
+% initialize optional outputs so all dispatch paths assign them
+p_err=[];
+x_grid=[];
+
 if strcmpi(x,'full')
     method='ifft';
 end
 
 if strcmpi(method,'auto')
-    if ~s && isscalar(unique(w)) % no s and only one unique weight
+    w_unique=unique(w);
+    if ~s && isscalar(w_unique) % no s and only one unique weight
         % ncx2 fallback
-        if (sign(unique(w))==1 && strcmpi(side,'lower')) || (sign(unique(w))==-1 && strcmpi(side,'upper'))
-            p=ncx2cdf((x-m)/unique(w),sum(k),sum(lambda));
+        if (sign(w_unique)==1 && strcmpi(side,'lower')) || (sign(w_unique)==-1 && strcmpi(side,'upper'))
+            p=ncx2cdf((x-m)/w_unique,sum(k),sum(lambda));
         else
-            p=ncx2cdf((x-m)/unique(w),sum(k),sum(lambda),'upper');
+            p=ncx2cdf((x-m)/w_unique,sum(k),sum(lambda),'upper');
         end
     elseif sum(abs(w))==0 && s % only normal term
         if strcmpi(side,'lower')
@@ -150,21 +155,13 @@ elseif strcmpi(method,'ray')
 elseif strcmpi(method,'imhof')
     [p,p_err]=gx2_imhof(x,w,k,lambda,s,m,varargin{:});
 elseif strcmpi(method,'ruben')
-    if s || ~(all(w>0)||all(w<0))
-        error("Ruben's method can only be used when all w are the same sign and s=0.")
-    else
-        [p,p_err]=gx2_ruben(x,w,k,lambda,m,varargin{:});
-    end
+    gx2_check_method(method,w,s);
+    [p,p_err]=gx2_ruben(x,w,k,lambda,m,varargin{:});
 elseif strcmpi(method,'tail')
     p=gx2_tail(x,w,k,lambda,s,m,varargin{:});
-    p_err=[];
 elseif strcmpi(method,'pearson')
     p=gx2_pearson(x,w,k,lambda,s,m,varargin{:});
-    p_err=[];
 elseif strcmpi(method,'ellipse')
-    if s || ~(all(w>0)||all(w<0))
-        error("The ellipse approximation can only be used when all w are the same sign and s=0.")
-    else
-        [p,p_err]=gx2_ellipse(x,w,k,lambda,m,varargin{:});
-    end
+    gx2_check_method(method,w,s);
+    [p,p_err]=gx2_ellipse(x,w,k,lambda,m,varargin{:});
 end

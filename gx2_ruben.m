@@ -9,7 +9,7 @@ addRequired(parser,'lambda',@(x) isreal(x) && isrow(x));
 addRequired(parser,'m',@(x) isreal(x) && isscalar(x));
 addOptional(parser,'side','lower',@(x) strcmpi(x,'lower') || strcmpi(x,'upper') );
 addParameter(parser,'output','cdf',@(x) strcmpi(x,'cdf') || strcmpi(x,'pdf') );
-addParameter(parser,'n_ruben',1e3,@(x) ismember(x,1:x));
+addParameter(parser,'n_ruben',1e3,@(x) isscalar(x) && (x>0) && (x==round(x)));
 
 parse(parser,x,w,k,lambda,m,varargin{:});
 side=parser.Results.side;
@@ -46,12 +46,12 @@ end
 if strcmpi(parser.Results.output,'cdf')
     if (w_pos && strcmpi(side,'upper')) || (~w_pos && strcmpi(side,'lower'))
         % upper tail
-        F=arrayfun(@(x,k) chi2cdf(x,k,'upper'),x_grid,k_grid);
+        F=chi2cdf(x_grid,k_grid,'upper');
     else
-        F=arrayfun(@(x,k) chi2cdf(x,k),x_grid,k_grid);
+        F=chi2cdf(x_grid,k_grid);
     end
 elseif strcmpi(parser.Results.output,'pdf')
-    F=arrayfun(@(x,k) chi2pdf(x,k),x_grid,k_grid);
+    F=chi2pdf(x_grid,k_grid);
 end
 
 % compute the integral

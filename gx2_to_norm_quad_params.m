@@ -39,12 +39,13 @@ function quad=gx2_to_norm_quad_params(w,k,lambda,s,m)
     % See also:
     % <a href="matlab:open(strcat(fileparts(which('gx2cdf')),filesep,'doc',filesep,'GettingStarted.mlx'))">Getting Started guide</a>
 
-    q2_parts=arrayfun(@(w,k) w*ones(1,k),w,k,'un',0); % each w_i, k_i times
-    q2=horzcat(q2_parts{:}); % append all of them
+    q2=repelem(w,k); % each w_i, k_i times
 
-    % each w_i*sqrt(lambda_i), append 0 k_i-1 times
-    q1_parts=arrayfun(@(w,lambda,k) [w*sqrt(lambda) zeros(1,k-1)],w,lambda,k,'un',0);
-    q1=-2*horzcat(q1_parts{:})'; % append all of them, multiply by -2
+    % each w_i*sqrt(lambda_i) at the start of its block, then 0 for the rest
+    q1=zeros(1,sum(k));
+    block_starts=cumsum([1 k(1:end-1)]); % first index of each w_i block
+    q1(block_starts)=w.*sqrt(lambda);
+    q1=-2*q1'; % multiply by -2
 
     if s % if there is a normal term,
         q2=[q2 0];

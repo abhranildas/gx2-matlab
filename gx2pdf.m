@@ -70,7 +70,7 @@ function [f,f_err,xgrid]=gx2pdf(x,w,k,lambda,s,m,varargin)
 % gpu_batch no. of rays to compute on each GPU batch. 0 to use CPU.
 %
 % Options for Ruben method:
-% n_ruben   no. of terms in Ruben's series. Larger=more accurate. Default=100.
+% n_ruben   no. of terms in Ruben's series. Larger=more accurate. Default=1000.
 %
 % Options for ifft method:
 % span      span of x over which to compute the IFFT. Larger=more accurate.
@@ -110,9 +110,7 @@ addOptional(parser,'side','lower',@(x) strcmpi(x,'lower') || strcmpi(x,'upper') 
 addParameter(parser,'method','auto');
 addParameter(parser,'AbsTol',1e-10,@(x) isreal(x) && isscalar(x) && (x>=0));
 addParameter(parser,'RelTol',1e-6,@(x) isreal(x) && isscalar(x) && (x>=0));
-addParameter(parser,'xrange',[],@(x) isscalar(x) && (x>0));
 [~,v]=gx2stat(w,k,lambda,s,m);
-addParameter(parser,'n_grid',1e4+1,@(x) isscalar(x) && (x>0));
 addParameter(parser,'diff',false,@islogical);
 addParameter(parser,'dx',sqrt(v)/1e4,@(x) isreal(x) && isscalar(x) && (x>=0)); % default derivative step-size is sd/100.
 parse(parser,x,w,k,lambda,s,m,varargin{:});
@@ -120,14 +118,19 @@ parse(parser,x,w,k,lambda,s,m,varargin{:});
 method=parser.Results.method;
 diff_flag=parser.Results.diff;
 
+% initialize optional outputs so all dispatch paths assign them
+f_err=[];
+xgrid=[];
+
 if strcmpi(x,'full')
     method='ifft';
 end
 
 if ~diff_flag
     if strcmpi(method,'auto')
-        if ~s && length(unique(w))==1 && ~strcmpi(x,'full')
-            f=ncx2pdf((x-m)/unique(w),sum(k),sum(lambda))/abs(unique(w));
+        w_unique=unique(w);
+        if ~s && isscalar(w_unique) && ~strcmpi(x,'full')
+            f=ncx2pdf((x-m)/w_unique,sum(k),sum(lambda))/abs(w_unique);
         elseif sum(abs(w))==0 && s % only normal term
             f=normpdf(x,m,s);
         else
@@ -136,23 +139,15 @@ if ~diff_flag
     elseif strcmpi(method,'imhof')
         f=gx2_imhof(x,w,k,lambda,s,m,varargin{:},'output','pdf');
     elseif strcmpi(method,'ruben')
-        if s || ~(all(w>0)||all(w<0))
-            error("Ruben's method can only be used when all w are the same sign and s=0.")
-        else
-            f=gx2_ruben(x,w,k,lambda,m,varargin{:},'output','pdf');
-        end
+        gx2_check_method(method,w,s);
+        f=gx2_ruben(x,w,k,lambda,m,varargin{:},'output','pdf');
     elseif strcmpi(method,'tail')
         f=gx2_tail(x,w,k,lambda,s,m,varargin{:},'output','pdf');
-        f_err=[];
     elseif strcmpi(method,'pearson')
         f=gx2_pearson(x,w,k,lambda,s,m,varargin{:},'output','pdf');
-        f_err=[];
     elseif strcmpi(method,'ellipse')
-        if s || ~(all(w>0)||all(w<0))
-            error("The ellipse approximation can only be used when all w are the same sign and s=0.")
-        else
-            [f,f_err]=gx2_ellipse(x,w,k,lambda,m,varargin{:},'output','pdf');
-        end
+        gx2_check_method(method,w,s);
+        [f,f_err]=gx2_ellipse(x,w,k,lambda,m,varargin{:},'output','pdf');
     elseif strcmpi(method,'ray')
         [f,f_err]=gx2pdf_ray(x,w,k,lambda,s,m,varargin{:});
     elseif strcmpi(method,'ifft')

@@ -1,7 +1,7 @@
 function s = signed_log_sum_exp(logs, dim)
-% LOG_SUM_EXP   Log-space summation with signed inputs.
+% SIGNED_LOG_SUM_EXP   Log-space summation with signed inputs.
 %
-%   s = LOG_SUM_EXP(logs,dim) returns the signed log–sum–exp of the numbers
+%   s = SIGNED_LOG_SUM_EXP(logs,dim) returns the signed log–sum–exp of the numbers
 %   whose values are represented by 'logs' using the following convention:
 %       For a positive number x, represent it as  -log10(x) (which is negative).
 %       For a negative number x, represent it as  log10(|x|) (which is positive).
@@ -15,7 +15,7 @@ function s = signed_log_sum_exp(logs, dim)
 %       % To compute  10^-3 - 10^-4, represent 10^-3 (positive) as -3 
 %       % and 10^-4 (to be subtracted) as +4.
 %       logs = [-3, 4];
-%       s = log_sum_exp(logs)
+%       s = signed_log_sum_exp(logs)
 %       % Here, the sum is 10^-3 - 10^-4 = 0.9e-3, whose representation is:
 %       %   -log10(0.9e-3) = -( -3 + log10(0.9) ) ≈ -3.0458.
 

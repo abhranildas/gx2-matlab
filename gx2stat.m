@@ -33,9 +33,9 @@ function [mu,v]=gx2stat(w,k,lambda,s,m)
     % <a href="matlab:open(strcat(fileparts(which('gx2cdf')),filesep,'doc',filesep,'GettingStarted.mlx'))">Getting Started guide</a>
 
     parser = inputParser;
-    addRequired(parser,'w',@(x) isreal(x));
-    addRequired(parser,'k',@(x) isreal(x));
-    addRequired(parser,'lambda',@(x) isreal(x));
+    addRequired(parser,'w',@(x) isreal(x) && isrow(x));
+    addRequired(parser,'k',@(x) isreal(x) && isrow(x));
+    addRequired(parser,'lambda',@(x) isreal(x) && isrow(x));
     addRequired(parser,'s',@(x) isreal(x) && isscalar(x));
     addRequired(parser,'m',@(x) isreal(x) && isscalar(x));
     parse(parser,w,k,lambda,s,m);
