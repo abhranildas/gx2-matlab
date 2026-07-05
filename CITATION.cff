@@ -1,0 +1,24 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite both the software and the associated paper below."
+title: gx2-matlab
+type: software
+authors:
+  - family-names: Das
+    given-names: Abhranil
+    affiliation: "Center for Perceptual Systems, The University of Texas at Austin"
+license: MIT
+repository-code: "https://github.com/abhranildas/gx2-matlab"
+preferred-citation:
+  type: article
+  title: "New methods to compute the generalized chi-square distribution"
+  authors:
+    - family-names: Das
+      given-names: Abhranil
+  journal: "Journal of Statistical Computation and Simulation"
+  volume: 95
+  issue: 12
+  start: 2608
+  end: 2642
+  year: 2025
+  publisher:
+    name: "Taylor & Francis"
