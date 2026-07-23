@@ -20,5 +20,19 @@ preferred-citation:
   start: 2608
   end: 2642
   year: 2025
+  doi: "10.1080/00949655.2025.2501401"
   publisher:
     name: "Taylor & Francis"
+references:
+  - type: article
+    title: "A method to integrate and classify normal distributions"
+    authors:
+      - family-names: Das
+        given-names: Abhranil
+      - family-names: Geisler
+        given-names: Wilson S.
+    year: 2021
+    journal: "Journal of Vision"
+    volume: 21
+    issue: 10
+    doi: "10.1167/jov.21.10.1"

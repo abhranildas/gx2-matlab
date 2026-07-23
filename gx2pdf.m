@@ -6,10 +6,10 @@ function [f,f_err,xgrid]=gx2pdf(x,w,k,lambda,s,m,varargin)
 % Center for Perceptual Systems, University of Texas at Austin
 % Comments, questions, bugs to abhranil.das@utexas.edu
 % If you use this code, please cite:
-% 1. <a href="matlab:web('https://arxiv.org/abs/2012.14331')"
+% 1. <a href="matlab:web('https://doi.org/10.1167/jov.21.10.1','-browser')"
 % >A method to integrate and classify normal distributions</a>
-% 2. <a href="matlab:web('https://arxiv.org/abs/2404.05062')"
-% >New methods for computing the generalized chi-square distribution</a>
+% 2. <a href="matlab:web('https://www.tandfonline.com/doi/abs/10.1080/00949655.2025.2501401','-browser')"
+% >New methods to compute the generalized chi-square distribution</a>
 %
 % Usage:
 % f=gx2pdf(x,w,k,lambda,s,m)

@@ -7,8 +7,8 @@ Abhranil Das, Center for Perceptual Systems, The University of Texas at Austin.
 Bugs/comments/questions/suggestions to abhranil.das@utexas.edu.
 
 If you use this code, please cite:
- - [Methods to integrate multinormals and compute classification measures](https://arxiv.org/abs/2012.14331)
- - New methods to compute the generalized chi-square distribution: [journal](https://www.tandfonline.com/doi/abs/10.1080/00949655.2025.2501401) / [arxiv](https://arxiv.org/abs/2404.05062) (better formatting)
+ - [A method to integrate and classify normal distributions](https://doi.org/10.1167/jov.21.10.1)
+ - [New methods to compute the generalized chi-square distribution](https://www.tandfonline.com/doi/abs/10.1080/00949655.2025.2501401)
 
 ## Installation
 Within Matlab's Home tab, select Add-Ons > Get Add-Ons > Search for 'Generalized chi-square distribution' and install.
@@ -27,3 +27,5 @@ For function help, type:
     doc gx2cdf
     doc gx2pdf
     doc gx2inv
+    doc cdf_grad_gx2
+    doc cdf_grad_norm_quad
