@@ -43,6 +43,9 @@ function [grad,hess]=cdf_grad_norm_quad(x,mu,v,quad,varargin)
 % RelTol    relative error tolerance for the underlying integrals. Default=1e-6.
 %           The absolute OR the relative tolerance is satisfied.
 % precision 'basic' (default) uses double precision, 'vpa' uses variable precision.
+% n_ruben   term-count cap passed through to the Ruben-series density
+%           derivatives used on the s==0 route (see gx2_dens_deriv, gx2_ruben).
+%           Only affects that route; ignored when s~=0. Default=1e3.
 %
 % Outputs:
 % grad      struct mirroring quad, holding the cdf gradient:
@@ -69,12 +72,14 @@ addParameter(parser,'wrt',groups,@(c) iscell(c) && all(ismember(lower(c),groups)
 addParameter(parser,'AbsTol',1e-10,@(x) isreal(x) && isscalar(x) && (x>=0));
 addParameter(parser,'RelTol',1e-6,@(x) isreal(x) && isscalar(x) && (x>=0));
 addParameter(parser,'precision','basic',@(x) strcmpi(x,'basic')||strcmpi(x,'vpa'));
+addParameter(parser,'n_ruben',1e3,@(x) isscalar(x) && (x>0) && (x==round(x)));
 parse(parser,x,mu,v,quad,varargin{:});
 
 wrt=parser.Results.wrt;
 AbsTol=parser.Results.AbsTol;
 RelTol=parser.Results.RelTol;
 precision=parser.Results.precision;
+n_ruben=parser.Results.n_ruben;
 
 mu=mu(:);
 q1c=quad.q1(:);
@@ -114,7 +119,7 @@ if s0
         if abs(dvals(j))>tol0, [~,compj(j)]=min(abs(w-dvals(j))); end
     end
     memo=containers.Map('KeyType','char','ValueType','any');
-    densopts={'AbsTol',AbsTol,'RelTol',RelTol};
+    densopts={'AbsTol',AbsTol,'RelTol',RelTol,'n_ruben',n_ruben};
 end
 
 % q0 block: dF/dq0 = -f(x0). Since q0 shifts q rigidly, this is just -pdf.

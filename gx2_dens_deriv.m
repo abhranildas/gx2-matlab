@@ -74,14 +74,47 @@ if all(pos) || all(neg)
     % same-sign (elliptical): differentiate Ruben's series directly
     fd=gx2_ruben(x,w,k,lambda,m,'output','pdf','nx',nx,'n_ruben',n_ruben);
 else
-    % mixed sign: q = q_+ - q_-, with q_+ carrying the offset m and all the
-    % derivatives; f^(nx)(x) = \int_0^inf f_{q+}^(nx)(x+v) f_{q-}(v) dv.
+    % mixed sign: q = q_+ - q_-, where q_+ = (positive-weight part) + m has
+    % support [m,inf) and q_- = (negated negative-weight part) has support
+    % [0,inf). The density is their cross-correlation, whose x-derivatives may
+    % be carried on either part. A low-dof density has a non-integrable edge
+    % singularity once differentiated, so we carry the derivatives on whichever
+    % part is sampled in its smooth interior, away from its own edge (the
+    % differentiated factor then never meets that singularity). For a threshold
+    % x below the q_+ floor m we differentiate q_-, otherwise q_+:
+    %   x <  m:  f^(nx)(x) = (-1)^nx int f_{q+}(x+v) f_{q-}^(nx)(v) dv
+    %   x >= m:  f^(nx)(x) =          int f_{q+}^(nx)(x+v) f_{q-}(v) dv
+    % (see section 1.5). At x=m exactly, both floors align into a genuine cusp;
+    % it is measure-zero and not hit in practice.
     wp=w(pos);  kp=k(pos);  lp=lambda(pos);
-    wn=-w(neg); kn=k(neg);  ln=lambda(neg);   % negated -> positive weights
-    fqp=@(y) gx2_ruben(y,wp,kp,lp,m,'output','pdf','nx',nx,'n_ruben',n_ruben);
-    fqm=@(v) gx2_ruben(v,wn,kn,ln,0,'output','pdf','n_ruben',n_ruben);
-    fd=arrayfun(@(xx) integral(@(v) fqp(xx+v).*fqm(v),0,inf,...
-        'AbsTol',AbsTol,'RelTol',RelTol), x);
+    wn=-w(neg); kn=k(neg);  ln=lambda(neg);   % negate -> positive weights
+
+    % Ruben's series coefficients depend only on (w,k,lambda), not on the
+    % evaluation point -- compute them once per gx2_dens_deriv call and reuse
+    % across every scalar quadrature callback below, rather than rebuilding
+    % the series from scratch on each of the (potentially hundreds of) points
+    % the inner integral() sweeps per integral.
+    coeffs_p=gx2_ruben_coeffs(wp,kp,lp,'n_ruben',n_ruben);
+    coeffs_n=gx2_ruben_coeffs(wn,kn,ln,'n_ruben',n_ruben);
+    fp=@(y,n) gx2_ruben_eval(coeffs_p,y,m,'output','pdf','nx',n);
+    fm=@(v,n) gx2_ruben_eval(coeffs_n,v,0,'output','pdf','nx',n);
+    fd=arrayfun(@(xx) conv_dens_deriv(xx,m,nx,fp,fm,AbsTol,RelTol),x);
 end
 fd=reshape(fd,size(x));
+end
+
+function val=conv_dens_deriv(xx,m,nx,fp,fm,AbsTol,RelTol)
+% One point of the mixed-sign cross-correlation, with the nx x-derivatives
+% carried on the part sampled in its interior (see the parent function).
+if xx<m
+    % Differentiate q_-. Since f_{q+}(xx+v)=0 for v<m-xx, start the integral at
+    % that floor; the (integrable) q_+ edge is then the lower endpoint, and the
+    % singular f_{q-}^(nx) is evaluated only for v>=m-xx>0, in q_-'s interior.
+    val=(-1)^nx*integral(@(v) fp(xx+v,0).*fm(v,nx),m-xx,inf,...
+        'AbsTol',AbsTol,'RelTol',RelTol);
+else
+    % Differentiate q_+, which is sampled strictly inside its support (xx+v>=m).
+    val=integral(@(v) fp(xx+v,nx).*fm(v,0),0,inf,...
+        'AbsTol',AbsTol,'RelTol',RelTol);
+end
 end
