@@ -1,4 +1,4 @@
-function [f,f_err,xgrid]=gx2pdf(x,w,k,lambda,s,m,varargin)
+function [f,f_err,xgrid]=gx2pdf(x,w,k,l,s,m,varargin)
 
 % GX2PDF Returns the pdf of a generalized chi-squared distribution.
 %
@@ -12,10 +12,10 @@ function [f,f_err,xgrid]=gx2pdf(x,w,k,lambda,s,m,varargin)
 % >New methods to compute the generalized chi-square distribution</a>
 %
 % Usage:
-% f=gx2pdf(x,w,k,lambda,s,m)
-% f=gx2pdf(x,w,k,lambda,s,m,'method','imhof','AbsTol',0,'RelTol',1e-7)
-% [f,f_err]=gx2pdf(x,w,k,lambda,s,m,'method','ray','n_rays',1e7)
-% [f,~,x_grid]=gx2pdf('full',w,k,lambda,s,m)
+% f=gx2pdf(x,w,k,l,s,m)
+% f=gx2pdf(x,w,k,l,s,m,'method','imhof','AbsTol',0,'RelTol',1e-7)
+% [f,f_err]=gx2pdf(x,w,k,l,s,m,'method','ray','n_rays',1e7)
+% [f,~,x_grid]=gx2pdf('full',w,k,l,s,m)
 % etc.
 %
 % Example:
@@ -31,7 +31,7 @@ function [f,f_err,xgrid]=gx2pdf(x,w,k,lambda,s,m,varargin)
 %
 % w         row vector of weights of the non-central chi-squares
 % k         row vector of degrees of freedom of the non-central chi-squares
-% lambda    row vector of non-centrality paramaters (sum of squares of
+% l         row vector of non-centrality paramaters (sum of squares of
 %           means) of the non-central chi-squares
 % s         scale of normal term
 % m         offset
@@ -103,17 +103,17 @@ parser.KeepUnmatched=true;
 addRequired(parser,'x',@(x) isreal(x) || strcmpi(x,'full'));
 addRequired(parser,'w',@(x) isreal(x) && isrow(x));
 addRequired(parser,'k',@(x) isreal(x) && isrow(x));
-addRequired(parser,'lambda',@(x) isreal(x) && isrow(x));
+addRequired(parser,'l',@(x) isreal(x) && isrow(x));
 addRequired(parser,'s',@(x) isreal(x) && isscalar(x));
 addRequired(parser,'m',@(x) isreal(x) && isscalar(x));
 addOptional(parser,'side','lower',@(x) strcmpi(x,'lower') || strcmpi(x,'upper') );
 addParameter(parser,'method','auto');
 addParameter(parser,'AbsTol',1e-10,@(x) isreal(x) && isscalar(x) && (x>=0));
 addParameter(parser,'RelTol',1e-6,@(x) isreal(x) && isscalar(x) && (x>=0));
-[~,v]=gx2stat(w,k,lambda,s,m);
+[~,v]=gx2stat(w,k,l,s,m);
 addParameter(parser,'diff',false,@islogical);
 addParameter(parser,'dx',sqrt(v)/1e4,@(x) isreal(x) && isscalar(x) && (x>=0)); % default derivative step-size is sd/100.
-parse(parser,x,w,k,lambda,s,m,varargin{:});
+parse(parser,x,w,k,l,s,m,varargin{:});
 
 method=parser.Results.method;
 diff_flag=parser.Results.diff;
@@ -130,34 +130,34 @@ if ~diff_flag
     if strcmpi(method,'auto')
         w_unique=unique(w);
         if ~s && isscalar(w_unique) && ~strcmpi(x,'full')
-            f=ncx2pdf((x-m)/w_unique,sum(k),sum(lambda))/abs(w_unique);
+            f=ncx2pdf((x-m)/w_unique,sum(k),sum(l))/abs(w_unique);
         elseif sum(abs(w))==0 && s % only normal term
             f=normpdf(x,m,s);
         else
-            f=gx2_imhof(x,w,k,lambda,s,m,varargin{:},'output','pdf');
+            f=gx2_imhof(x,w,k,l,s,m,varargin{:},'output','pdf');
         end
     elseif strcmpi(method,'imhof')
-        f=gx2_imhof(x,w,k,lambda,s,m,varargin{:},'output','pdf');
+        f=gx2_imhof(x,w,k,l,s,m,varargin{:},'output','pdf');
     elseif strcmpi(method,'ruben')
         gx2_check_method(method,w,s);
-        f=gx2_ruben(x,w,k,lambda,m,varargin{:},'output','pdf');
+        f=gx2_ruben(x,w,k,l,m,varargin{:},'output','pdf');
     elseif strcmpi(method,'tail')
-        f=gx2_tail(x,w,k,lambda,s,m,varargin{:},'output','pdf');
+        f=gx2_tail(x,w,k,l,s,m,varargin{:},'output','pdf');
     elseif strcmpi(method,'pearson')
-        f=gx2_pearson(x,w,k,lambda,s,m,varargin{:},'output','pdf');
+        f=gx2_pearson(x,w,k,l,s,m,varargin{:},'output','pdf');
     elseif strcmpi(method,'ellipse')
         gx2_check_method(method,w,s);
-        [f,f_err]=gx2_ellipse(x,w,k,lambda,m,varargin{:},'output','pdf');
+        [f,f_err]=gx2_ellipse(x,w,k,l,m,varargin{:},'output','pdf');
     elseif strcmpi(method,'ray')
-        [f,f_err]=gx2pdf_ray(x,w,k,lambda,s,m,varargin{:});
+        [f,f_err]=gx2pdf_ray(x,w,k,l,s,m,varargin{:});
     elseif strcmpi(method,'ifft')
-        [f,xgrid]=gx2_ifft(x,w,k,lambda,s,m,varargin{:},'output','pdf');
+        [f,xgrid]=gx2_ifft(x,w,k,l,s,m,varargin{:},'output','pdf');
         f_err=[];
     end
 else % if numerical differentiation
     dx=parser.Results.dx;
-    p_left=gx2cdf(x-dx,w,k,lambda,s,m,varargin{:});
-    p_right=gx2cdf(x+dx,w,k,lambda,s,m,varargin{:});
+    p_left=gx2cdf(x-dx,w,k,l,s,m,varargin{:});
+    p_right=gx2cdf(x+dx,w,k,l,s,m,varargin{:});
     f=(p_right-p_left)/(2*dx);
     f=max(f,0);
 end

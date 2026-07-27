@@ -1,23 +1,23 @@
-function p=gx2_pearson(x,w,k,lambda,s,m,varargin)
+function p=gx2_pearson(x,w,k,l,s,m,varargin)
 
 parser = inputParser;
 parser.KeepUnmatched=true;
 addRequired(parser,'x',@(x) isreal(x));
 addRequired(parser,'w',@(x) isreal(x) && isrow(x));
 addRequired(parser,'k',@(x) isreal(x) && isrow(x));
-addRequired(parser,'lambda',@(x) isreal(x) && isrow(x));
+addRequired(parser,'l',@(x) isreal(x) && isrow(x));
 addRequired(parser,'s',@(x) isreal(x) && isrow(x));
 addRequired(parser,'m',@(x) isreal(x) && isscalar(x));
 addOptional(parser,'side','lower',@(x) strcmpi(x,'lower') || strcmpi(x,'upper') );
 addParameter(parser,'output','cdf',@(x) strcmpi(x,'cdf') || strcmpi(x,'pdf') );
 
-parse(parser,x,w,k,lambda,s,m,varargin{:});
+parse(parser,x,w,k,l,s,m,varargin{:});
 side=parser.Results.side;
 
 % first 3 central moments:
-mu(1)=sum(w.*(k+lambda))+m;
-mu(2)=2*sum(w.^2.*(k+2*lambda))+s^2;
-mu(3)=8*sum(w.^3.*(k+3*lambda));
+mu(1)=sum(w.*(k+l))+m;
+mu(2)=2*sum(w.^2.*(k+2*l))+s^2;
+mu(3)=8*sum(w.^3.*(k+3*l));
 
 h=8*mu(2)^3/mu(3)^2;
 

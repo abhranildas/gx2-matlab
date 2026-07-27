@@ -1,11 +1,11 @@
-function [p,xgrid]=gx2_ifft(x,w,k,lambda,s,m,varargin)
+function [p,xgrid]=gx2_ifft(x,w,k,l,s,m,varargin)
 
 parser=inputParser;
 parser.KeepUnmatched=true;
 addRequired(parser,'x',@(x) isreal(x) || strcmpi(x,'full'));
 addRequired(parser,'w',@(x) isreal(x) && isrow(x));
 addRequired(parser,'k',@(x) isreal(x) && isrow(x));
-addRequired(parser,'lambda',@(x) isreal(x) && isrow(x));
+addRequired(parser,'l',@(x) isreal(x) && isrow(x));
 addRequired(parser,'s',@(x) isreal(x) && isscalar(x));
 addRequired(parser,'m',@(x) isreal(x) && isscalar(x));
 addOptional(parser,'side','lower',@(x) strcmpi(x,'lower') || strcmpi(x,'upper') );
@@ -13,7 +13,7 @@ addParameter(parser,'output','cdf',@(x) strcmpi(x,'cdf') || strcmpi(x,'pdf') );
 % range of x over which to compute ifft:
 if strcmpi(x,'full')
     % default span is upto 100 sd from mean
-    [mu,v]=gx2stat(w,k,lambda,s,m);
+    [mu,v]=gx2stat(w,k,l,s,m);
     span=max(abs(mu+[-1 1]*100*sqrt(v)));
 else
     % default span is 100* input span
@@ -24,7 +24,7 @@ addParameter(parser,'span',span,@(x) isscalar(x) && (x>0));
 % number of grid points for ifft
 addParameter(parser,'n_grid',1e6+1,@(x) isscalar(x) && (x>0));
 addParameter(parser,'ft_type','cft');
-parse(parser,x,w,k,lambda,s,m,varargin{:});
+parse(parser,x,w,k,l,s,m,varargin{:});
 span=parser.Results.span;
 n_grid=round(parser.Results.n_grid);
 
@@ -50,9 +50,9 @@ if strcmpi(parser.Results.ft_type,'dft')
     ncpdfs=nan(nnz(w),length(xgrid));
     for i=1:nnz(w)
         if i==1 % add the offset m to the first term
-            pdf=gx2pdf(xgrid,w(w_idx(i)),k(w_idx(i)),lambda(w_idx(i)),0,m);
+            pdf=gx2pdf(xgrid,w(w_idx(i)),k(w_idx(i)),l(w_idx(i)),0,m);
         else
-            pdf=gx2pdf(xgrid,w(w_idx(i)),k(w_idx(i)),lambda(w_idx(i)),0,0);
+            pdf=gx2pdf(xgrid,w(w_idx(i)),k(w_idx(i)),l(w_idx(i)),0,0);
         end
         pdf(isinf(pdf))=max(pdf(~isinf(pdf)));
         ncpdfs(i,:)=pdf;
@@ -67,7 +67,7 @@ if strcmpi(parser.Results.ft_type,'dft')
 elseif strcmpi(parser.Results.ft_type,'cft')
     dt=2*pi/(n_grid*dx);
     t=idx*dt; % grid of points to evaluate characteristic function
-    phi=gx2char(-t,w,k,lambda,s,m);
+    phi=gx2char(-t,w,k,l,s,m);
 
     if strcmpi(parser.Results.output,'pdf')
         phi=phi.*exp(1i*x_mid*dt*idx);

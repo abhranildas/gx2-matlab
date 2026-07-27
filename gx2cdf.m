@@ -1,4 +1,4 @@
-function [p,p_err,x_grid]=gx2cdf(x,w,k,lambda,s,m,varargin)
+function [p,p_err,x_grid]=gx2cdf(x,w,k,l,s,m,varargin)
 
 % GX2CDF Returns the cdf of a generalized chi-squared distribution.
 %
@@ -12,11 +12,11 @@ function [p,p_err,x_grid]=gx2cdf(x,w,k,lambda,s,m,varargin)
 % >New methods to compute the generalized chi-square distribution</a>
 %
 % Usage:
-% p=gx2cdf(x,w,k,lambda,s,m)
-% p=gx2cdf(x,w,k,lambda,s,m,'upper')
-% p=gx2cdf(x,w,k,lambda,s,m,'method','imhof','AbsTol',0,'RelTol',1e-7)
-% [p,p_err]=gx2cdf(x,w,k,lambda,s,m,'method','ray','n_rays',1e7)
-% [p,~,x_grid]=gx2cdf('full',w,k,lambda,s,m)
+% p=gx2cdf(x,w,k,l,s,m)
+% p=gx2cdf(x,w,k,l,s,m,'upper')
+% p=gx2cdf(x,w,k,l,s,m,'method','imhof','AbsTol',0,'RelTol',1e-7)
+% [p,p_err]=gx2cdf(x,w,k,l,s,m,'method','ray','n_rays',1e7)
+% [p,~,x_grid]=gx2cdf('full',w,k,l,s,m)
 % etc.
 %
 % Example:
@@ -32,7 +32,7 @@ function [p,p_err,x_grid]=gx2cdf(x,w,k,lambda,s,m,varargin)
 %
 % w         row vector of weights of the non-central chi-squares
 % k         row vector of degrees of freedom of the non-central chi-squares
-% lambda    row vector of non-centrality paramaters (sum of squares of
+% l         row vector of non-centrality paramaters (sum of squares of
 %           means) of the non-central chi-squares
 % s         scale of normal term
 % m         offset
@@ -101,13 +101,13 @@ parser.KeepUnmatched = true;
 addRequired(parser,'x',@(x) isreal(x) || strcmpi(x,'full'));
 addRequired(parser,'w',@(x) isreal(x) && isrow(x));
 addRequired(parser,'k',@(x) isreal(x) && isrow(x));
-addRequired(parser,'lambda',@(x) isreal(x) && isrow(x));
+addRequired(parser,'l',@(x) isreal(x) && isrow(x));
 addRequired(parser,'s',@(x) isreal(x) && isscalar(x));
 addRequired(parser,'m',@(x) isreal(x) && isscalar(x));
 addOptional(parser,'side','lower',@(x) strcmpi(x,'lower') || strcmpi(x,'upper') );
 addParameter(parser,'method','auto');
 
-parse(parser,x,w,k,lambda,s,m,varargin{:});
+parse(parser,x,w,k,l,s,m,varargin{:});
 method=parser.Results.method;
 side=parser.Results.side;
 
@@ -124,9 +124,9 @@ if strcmpi(method,'auto')
     if ~s && isscalar(w_unique) % no s and only one unique weight
         % ncx2 fallback
         if (sign(w_unique)==1 && strcmpi(side,'lower')) || (sign(w_unique)==-1 && strcmpi(side,'upper'))
-            p=ncx2cdf((x-m)/w_unique,sum(k),sum(lambda));
+            p=ncx2cdf((x-m)/w_unique,sum(k),sum(l));
         else
-            p=ncx2cdf((x-m)/w_unique,sum(k),sum(lambda),'upper');
+            p=ncx2cdf((x-m)/w_unique,sum(k),sum(l),'upper');
         end
     elseif sum(abs(w))==0 && s % only normal term
         if strcmpi(side,'lower')
@@ -137,31 +137,31 @@ if strcmpi(method,'auto')
     elseif ~s
         if (all(w>0) && strcmpi(side,'lower'))||(all(w<0) && strcmpi(side,'upper'))  % no s and w same sign
             try
-                [p,p_err]=gx2_ruben(x,w,k,lambda,m,varargin{:});
+                [p,p_err]=gx2_ruben(x,w,k,l,m,varargin{:});
             catch
-                [p,p_err]=gx2_imhof(x,w,k,lambda,0,m,varargin{:});
+                [p,p_err]=gx2_imhof(x,w,k,l,0,m,varargin{:});
             end
         else
-            [p,p_err]=gx2_imhof(x,w,k,lambda,s,m,varargin{:});
+            [p,p_err]=gx2_imhof(x,w,k,l,s,m,varargin{:});
         end
     else
-        [p,p_err]=gx2_imhof(x,w,k,lambda,s,m,varargin{:});
+        [p,p_err]=gx2_imhof(x,w,k,l,s,m,varargin{:});
     end
 elseif strcmpi(method,'ifft')
-    [p,x_grid]=gx2_ifft(x,w,k,lambda,s,m,varargin{:},'output','cdf');
+    [p,x_grid]=gx2_ifft(x,w,k,l,s,m,varargin{:},'output','cdf');
     p_err=[];
 elseif strcmpi(method,'ray')
-    [p,p_err]=gx2cdf_ray(x,w,k,lambda,s,m,varargin{:});
+    [p,p_err]=gx2cdf_ray(x,w,k,l,s,m,varargin{:});
 elseif strcmpi(method,'imhof')
-    [p,p_err]=gx2_imhof(x,w,k,lambda,s,m,varargin{:});
+    [p,p_err]=gx2_imhof(x,w,k,l,s,m,varargin{:});
 elseif strcmpi(method,'ruben')
     gx2_check_method(method,w,s);
-    [p,p_err]=gx2_ruben(x,w,k,lambda,m,varargin{:});
+    [p,p_err]=gx2_ruben(x,w,k,l,m,varargin{:});
 elseif strcmpi(method,'tail')
-    p=gx2_tail(x,w,k,lambda,s,m,varargin{:});
+    p=gx2_tail(x,w,k,l,s,m,varargin{:});
 elseif strcmpi(method,'pearson')
-    p=gx2_pearson(x,w,k,lambda,s,m,varargin{:});
+    p=gx2_pearson(x,w,k,l,s,m,varargin{:});
 elseif strcmpi(method,'ellipse')
     gx2_check_method(method,w,s);
-    [p,p_err]=gx2_ellipse(x,w,k,lambda,m,varargin{:});
+    [p,p_err]=gx2_ellipse(x,w,k,l,m,varargin{:});
 end

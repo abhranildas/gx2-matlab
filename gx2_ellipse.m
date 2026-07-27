@@ -1,17 +1,17 @@
-function [p,p_rel_err]=gx2_ellipse(x,w,k,lambda,m,varargin)
+function [p,p_rel_err]=gx2_ellipse(x,w,k,l,m,varargin)
 
 parser=inputParser;
 parser.KeepUnmatched=true;
 addRequired(parser,'x',@(x) isreal(x));
 addRequired(parser,'w',@(x) isreal(x) && isrow(x)  && (all(x>0)||all(x<0)) );
 addRequired(parser,'k',@(x) isreal(x) && isrow(x));
-addRequired(parser,'lambda',@(x) isreal(x) && isrow(x));
+addRequired(parser,'l',@(x) isreal(x) && isrow(x));
 addRequired(parser,'m',@(x) isreal(x) && isscalar(x));
 addOptional(parser,'side','lower',@(x) strcmpi(x,'lower') || strcmpi(x,'upper') );
 addParameter(parser,'output','cdf',@(x) strcmpi(x,'cdf') || strcmpi(x,'pdf') );
 addParameter(parser,'x_scale','linear',@(x) strcmpi(x,'linear') || strcmpi(x,'log') );
 
-parse(parser,x,w,k,lambda,m,varargin{:});
+parse(parser,x,w,k,l,m,varargin{:});
 side=parser.Results.side;
 x_scale=parser.Results.x_scale;
 w_pos=true;
@@ -27,7 +27,7 @@ if all(w<0)
 end
 
 % find ellipse parameters
-ellipse_center=arrayfun(@(lambda,k) [sqrt(lambda) zeros(1,k-1)],lambda,k,'un',0);
+ellipse_center=arrayfun(@(l,k) [sqrt(l) zeros(1,k-1)],l,k,'un',0);
 ellipse_center=[ellipse_center{:}];
 ellipse_weights=arrayfun(@(w,k) w*ones(1,k),w,k,'un',0);
 ellipse_weights=[ellipse_weights{:}];

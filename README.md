@@ -14,7 +14,7 @@ of a normal random vector. It is parametrized by:
 |-----------|---------|
 | `w`       | weights of the non-central chi-square terms |
 | `k`       | their degrees of freedom |
-| `lambda` | their non-centralities |
+| `l`       | their non-centralities |
 | `s`       | scale (standard deviation) of the added normal term |
 | `m`       | constant offset |
 
@@ -34,15 +34,15 @@ Within Matlab's Home tab, select Add-Ons > Get Add-Ons > Search for 'Generalized
 
 | function | purpose |
 |----------|---------|
-| `gx2stat(w, k, lambda, s, m)` | mean and variance |
-| `gx2char(t, w, k, lambda, s, m)` | characteristic function |
-| `gx2rnd(w, k, lambda, s, m, sz, method=)` | random numbers |
-| `gx2cdf(x, w, k, lambda, s, m, side=, method=, ...)` | cdf |
-| `gx2pdf(x, w, k, lambda, s, m, side=, method=, ...)` | pdf |
-| `gx2inv(p, w, k, lambda, s, m, side=, method=, ...)` | inverse cdf |
-| `gx2_to_norm_quad_params(w, k, lambda, s, m)` | gx2 → quadratic-form coefficients of a standard normal |
+| `gx2stat(w, k, l, s, m)` | mean and variance |
+| `gx2char(t, w, k, l, s, m)` | characteristic function |
+| `gx2rnd(w, k, l, s, m, sz, method=)` | random numbers |
+| `gx2cdf(x, w, k, l, s, m, side=, method=, ...)` | cdf |
+| `gx2pdf(x, w, k, l, s, m, side=, method=, ...)` | pdf |
+| `gx2inv(p, w, k, l, s, m, side=, method=, ...)` | inverse cdf |
+| `gx2_to_norm_quad_params(w, k, l, s, m)` | gx2 → quadratic-form coefficients of a standard normal |
 | `norm_quad_to_gx2_params(mu, v, quad, merge=)` | quadratic form of a normal → gx2 parameters |
-| `cdf_grad_gx2(x, w, k, lambda, s, m, wrt=, ...)` | exact gradient (and, as a 2nd output, Hessian) of the cdf wrt the native parameters `w, k, lambda, s, m` |
+| `cdf_grad_gx2(x, w, k, l, s, m, wrt=, ...)` | exact gradient (and, as a 2nd output, Hessian) of the cdf wrt the native parameters `w, k, l, s, m` |
 | `cdf_grad_norm_quad(x, mu, v, quad, wrt=, ...)` | exact gradient (and, as a 2nd output, Hessian) of the cdf wrt the quadratic boundary coefficients `q2, q1, q0` |
 
 For full documentation of any function, type in Matlab, e.g.:
@@ -86,11 +86,11 @@ The following are the worked examples from it.
 % gx2 parameters
 w=[1 -10 2];
 k=[1 2 3];
-lambda=[2 3 7];
+l=[2 3 7];
 s=5;
 m=10;
 
-[mu,v,mode]=gx2stat(w,k,lambda,s,m)
+[mu,v,mode]=gx2stat(w,k,l,s,m)
 ```
 ```
 mu =
@@ -106,7 +106,7 @@ mode =
 ### Generate random samples
 
 ```matlab
-r=gx2rnd(w,k,lambda,s,m,[1 1e5]);
+r=gx2rnd(w,k,l,s,m,[1 1e5]);
 figure;
 histogram(r,'EdgeColor','none')
 xline(mode,'-',{'expected mode'},'labelorientation','aligned')
@@ -117,14 +117,14 @@ xline(mode,'-',{'expected mode'},'labelorientation','aligned')
 
 ```matlab
 x=[10 25];
-f=gx2pdf(x,w,k,lambda,s,m)
+f=gx2pdf(x,w,k,l,s,m)
 ```
 ```
 f =
     0.0121    0.0088
 ```
 ```matlab
-p=gx2cdf(x,w,k,lambda,s,m)
+p=gx2cdf(x,w,k,l,s,m)
 ```
 ```
 p =
@@ -132,7 +132,7 @@ p =
 ```
 ```matlab
 % find the median by using the inverse CDF function:
-x_med=gx2inv(.5,w,k,lambda,s,m)
+x_med=gx2inv(.5,w,k,l,s,m)
 ```
 ```
 x_med =
@@ -140,7 +140,7 @@ x_med =
 ```
 ```matlab
 % Compute quantiles for cdf values of 1e-3 and 1e-2, by supplying their log10 values:
-x_q=gx2inv([-3 -2],w,k,lambda,s,m)
+x_q=gx2inv([-3 -2],w,k,l,s,m)
 ```
 ```
 Warning: Imhof method output(s) too close to limit to compute exactly, so clipping. Check the flag output, and try stricter tolerances.
@@ -150,7 +150,7 @@ x_q =
 ```
 ```matlab
 % verify that cdf values here are indeed 1e-3 and 1e-2
-p=gx2cdf(x_q,w,k,lambda,s,m)
+p=gx2cdf(x_q,w,k,l,s,m)
 ```
 ```
 p =
@@ -158,7 +158,7 @@ p =
 ```
 ```matlab
 % Compute quantiles for complementary cdf values of 1e-3 and 1e-2, by supplying their log10 values:
-x_q=gx2inv([-3 -2],w,k,lambda,s,m,'upper')
+x_q=gx2inv([-3 -2],w,k,l,s,m,'upper')
 ```
 ```
 x_q =
@@ -166,7 +166,7 @@ x_q =
 ```
 ```matlab
 % verify that ccdf values here are indeed 1e-3 and 1e-2
-p=gx2cdf(x_q,w,k,lambda,s,m,'upper')
+p=gx2cdf(x_q,w,k,l,s,m,'upper')
 ```
 ```
 p =
@@ -175,7 +175,7 @@ p =
 ```matlab
 % compute the PDF over most of the span of the distribution.
 % with the 'full' argument, the span x is computed automatically.
-[f,~,x]=gx2pdf('full',w,k,lambda,s,m);
+[f,~,x]=gx2pdf('full',w,k,l,s,m);
 
 % now compare the sampled histogram with the computed PDF
 figure; hold on
@@ -189,7 +189,7 @@ xlim([-250 100])
 % compute CDF over most of the span of the distribution.
 % the 'full' argument uses the IFFT method, good for quick rough plots,
 % but less accurate (esp. for CDF) than some other methods
-[p,~,x]=gx2cdf('full',w,k,lambda,s,m);
+[p,~,x]=gx2cdf('full',w,k,l,s,m);
 
 % now compare the sampled histogram with the computed CDF
 figure; hold on
@@ -209,12 +209,12 @@ xlim([-200 100])
 ```matlab
 w=[-2 -5 2];
 k=[2 1 3];
-lambda=[0 4 4];
+l=[0 4 4];
 s=3;
 m=-20;
 
 % first find the quantile points at 0.1% in each tail
-x_bounds=gx2inv([0.001 0.999],w,k,lambda,s,m)
+x_bounds=gx2inv([0.001 0.999],w,k,l,s,m)
 ```
 ```
 x_bounds =
@@ -225,9 +225,9 @@ x_bounds =
 x=linspace(x_bounds(1),x_bounds(2),50);
 
 % compute CDF
-p_ifft=gx2cdf(x,w,k,lambda,s,m,'method','ifft');
-p_imhof=gx2cdf(x,w,k,lambda,s,m,'method','imhof');
-p_ray=gx2cdf(x,w,k,lambda,s,m,'method','ray','n_rays',1e4);
+p_ifft=gx2cdf(x,w,k,l,s,m,'method','ifft');
+p_imhof=gx2cdf(x,w,k,l,s,m,'method','imhof');
+p_ray=gx2cdf(x,w,k,l,s,m,'method','ray','n_rays',1e4);
 figure; hold on
 plot(x,p_ifft,'-k')
 plot(x,p_imhof,'.b')
@@ -237,9 +237,9 @@ legend('IFFT','Imhof','ray')
 ![now compute within this range](https://raw.githubusercontent.com/abhranildas/gx2-matlab/main/getting-started/a-non-elliptic-distribution-4.png)
 ```matlab
 % compute PDF
-f_ifft=gx2pdf(x,w,k,lambda,s,m,'method','ifft');
-f_imhof=gx2pdf(x,w,k,lambda,s,m,'method','imhof');
-f_ray=gx2pdf(x,w,k,lambda,s,m,'method','ray','n_rays',1e6);
+f_ifft=gx2pdf(x,w,k,l,s,m,'method','ifft');
+f_imhof=gx2pdf(x,w,k,l,s,m,'method','imhof');
+f_ray=gx2pdf(x,w,k,l,s,m,'method','ray','n_rays',1e6);
 
 figure; hold on
 plot(x,f_ifft,'-k')
@@ -252,7 +252,7 @@ legend('IFFT','Imhof','ray')
 % Compute quantiles for tiny cdf values of 1e-1000 and 1e-2000, by supplying
 % their log10 values. Use a forward cdf method that can get down to such tiny values.
 % Here we use the infinite-tail approximation.
-x_q=gx2inv([-1e3 -2e3],w,k,lambda,s,m,'method','tail')
+x_q=gx2inv([-1e3 -2e3],w,k,l,s,m,'method','tail')
 ```
 ```
 Warning: Some output values are too small for double precision. Returning their log10 values, which are negative.
@@ -263,7 +263,7 @@ x_q =
 ```
 ```matlab
 % now verify using an exact cdf method that cdf values here are indeed 1e-1000 and 1e-2000:
-p=gx2cdf(x_q,w,k,lambda,s,m,'method','ray','n_rays',1e7)
+p=gx2cdf(x_q,w,k,l,s,m,'method','ray','n_rays',1e7)
 ```
 ```
 Warning: Some output values are too small for double precision. Returning their log10 values, which are negative.
@@ -274,7 +274,7 @@ p =
 ```
 ```matlab
 % now do the same for the upper tail:
-x_q=gx2inv([-1e3 -2e3],w,k,lambda,s,m,'upper','method','tail')
+x_q=gx2inv([-1e3 -2e3],w,k,l,s,m,'upper','method','tail')
 ```
 ```
 Warning: Some output values are too small for double precision. Returning their log10 values, which are negative.
@@ -284,7 +284,7 @@ x_q =
     0.9724    1.9159
 ```
 ```matlab
-p=gx2cdf(x_q,w,k,lambda,s,m,'upper','method','ray','n_rays',1e7)
+p=gx2cdf(x_q,w,k,l,s,m,'upper','method','ray','n_rays',1e7)
 ```
 ```
 Warning: Some output values are too small for double precision. Returning their log10 values, which are negative.
@@ -301,12 +301,12 @@ Here we can use Ruben's method too.
 ```matlab
 w=[3 4 5];
 k=[1 2 3];
-lambda=[2 3 7];
+l=[2 3 7];
 s=0;
 m=-100;
 
 % first find the quantile points at 0.1% in each tail
-x_bounds=gx2inv([0.001 0.999],w,k,lambda,s,m)
+x_bounds=gx2inv([0.001 0.999],w,k,l,s,m)
 ```
 ```
 x_bounds =
@@ -317,10 +317,10 @@ x_bounds =
 x=linspace(x_bounds(1),x_bounds(2),50);
 
 % compute CDF
-p_ifft=gx2cdf(x,w,k,lambda,s,m,'method','ifft');
-p_imhof=gx2cdf(x,w,k,lambda,s,m,'method','imhof');
-p_ray=gx2cdf(x,w,k,lambda,s,m,'method','ray','n_rays',1e4);
-p_ruben=gx2cdf(x,w,k,lambda,s,m,'method','ruben');
+p_ifft=gx2cdf(x,w,k,l,s,m,'method','ifft');
+p_imhof=gx2cdf(x,w,k,l,s,m,'method','imhof');
+p_ray=gx2cdf(x,w,k,l,s,m,'method','ray','n_rays',1e4);
+p_ruben=gx2cdf(x,w,k,l,s,m,'method','ruben');
 
 figure; hold on
 plot(x,p_ifft,'-k')
@@ -332,10 +332,10 @@ legend('IFFT','Imhof','ray', 'Ruben')
 ![now compute within this range](https://raw.githubusercontent.com/abhranildas/gx2-matlab/main/getting-started/an-elliptic-distribution-6.png)
 ```matlab
 % compute PDF
-f_ifft=gx2pdf(x,w,k,lambda,s,m,'method','ifft');
-f_imhof=gx2pdf(x,w,k,lambda,s,m,'method','imhof');
-f_ray=gx2pdf(x,w,k,lambda,s,m,'method','ray','n_rays',1e6);
-f_ruben=gx2pdf(x,w,k,lambda,s,m,'method','ruben');
+f_ifft=gx2pdf(x,w,k,l,s,m,'method','ifft');
+f_imhof=gx2pdf(x,w,k,l,s,m,'method','imhof');
+f_ray=gx2pdf(x,w,k,l,s,m,'method','ray','n_rays',1e6);
+f_ruben=gx2pdf(x,w,k,l,s,m,'method','ruben');
 
 figure; hold on
 plot(x,f_ifft,'-k')
@@ -350,7 +350,7 @@ legend('IFFT','Imhof','ray', 'Ruben')
 % their log10 values. Use a forward cdf method that can get down to such tiny values.
 % Here we use the ellipse approximation, with 'x_scale', 'log', which allows to specify
 % log10 values of x measured from the finite tail m.
-x_q=gx2inv([-1e3 -2e3],w,k,lambda,s,m,'method','ellipse','x_scale','log')
+x_q=gx2inv([-1e3 -2e3],w,k,l,s,m,'method','ellipse','x_scale','log')
 ```
 ```
 x_q =
@@ -360,7 +360,7 @@ x_q =
 % this means that the computed quantiles are 1e-331 and 1e-664 above m
 
 % now verify using the forward cdf method that cdf values here are indeed 1e-1000 and 1e-2000:
-p=gx2cdf(x_q,w,k,lambda,s,m,'method','ellipse','x_scale','log')
+p=gx2cdf(x_q,w,k,l,s,m,'method','ellipse','x_scale','log')
 ```
 ```
 p =
@@ -377,26 +377,26 @@ Ray, tail and Imhof methods are best for infinite tails.
 ```matlab
 w=[1 2 -3 -4];
 k=[6 5 4 3];
-lambda=[5 10 0 0];
+l=[5 10 0 0];
 s=10;
 m=-50;
 
 x=linspace(-500,200,40);
 
-p_ifft=gx2cdf(x,w,k,lambda,s,m,'method','ifft','span',1e7,'n_grid',1e7);
-p_imhof=gx2cdf(x,w,k,lambda,s,m,'method','imhof','abstol',0,'reltol',1e-10);
+p_ifft=gx2cdf(x,w,k,l,s,m,'method','ifft','span',1e7,'n_grid',1e7);
+p_imhof=gx2cdf(x,w,k,l,s,m,'method','imhof','abstol',0,'reltol',1e-10);
 ```
 ```
 Warning: Imhof method output(s) too close to limit to compute exactly, so clipping. Check the flag output, and try stricter tolerances.
 ```
 ```matlab
-p_ray=gx2cdf(x,w,k,lambda,s,m,'method','ray','n_rays',1e6);
-p_pearson=gx2cdf(x,w,k,lambda,s,m,'method','pearson'); % pearson sucks
+p_ray=gx2cdf(x,w,k,l,s,m,'method','ray','n_rays',1e6);
+p_pearson=gx2cdf(x,w,k,l,s,m,'method','pearson'); % pearson sucks
 
 % tail approximation for lower tail. Mentioning 'lower' is needed here.
 % For output values that are too small for double precision, it returns
 % their log10 values, which are negative.
-p_tail=gx2cdf(x,w,k,lambda,s,m,'lower','method','tail');
+p_tail=gx2cdf(x,w,k,l,s,m,'lower','method','tail');
 % convert all output values to their log10
 p_tail(p_tail>0)=log10(p_tail(p_tail>0));
 
@@ -419,18 +419,18 @@ ylabel('$\log_{10} p$','Interpreter','latex')
 ```matlab
 x=linspace(0,500,40);
 
-f_ifft=gx2pdf(x,w,k,lambda,s,m,'method','ifft','span',1e7,'n_grid',1e7);
-f_imhof=gx2pdf(x,w,k,lambda,s,m,'method','imhof','abstol',0,'reltol',1e-1);
+f_ifft=gx2pdf(x,w,k,l,s,m,'method','ifft','span',1e7,'n_grid',1e7);
+f_imhof=gx2pdf(x,w,k,l,s,m,'method','imhof','abstol',0,'reltol',1e-1);
 ```
 ```
 Warning: Imhof method output(s) too close to limit to compute exactly, so clipping. Check the flag output, and try stricter tolerances.
 ```
 ```matlab
-f_ray=gx2pdf(x,w,k,lambda,s,m,'method','ray','n_rays',1e6);
-f_pearson=gx2pdf(x,w,k,lambda,s,m,'method','pearson');
+f_ray=gx2pdf(x,w,k,l,s,m,'method','ray','n_rays',1e6);
+f_pearson=gx2pdf(x,w,k,l,s,m,'method','pearson');
 
 % tail approximation for upper tail. Mentioning 'upper' is needed here.
-f_tail=gx2pdf(x,w,k,lambda,s,m,'upper','method','tail');
+f_tail=gx2pdf(x,w,k,l,s,m,'upper','method','tail');
 
 figure; hold on
 plot(x,log10(f_ifft),'-k')
@@ -453,23 +453,23 @@ Ruben and ellipse methods are best for finite tails.
 ```matlab
 w=[1 2 3 4];
 k=[6 5 4 3];
-lambda=[5 10 0 0];
+l=[5 10 0 0];
 s=0;
 m=0;
 
 x=logspace(-2,2,40);
 
-p_ifft=gx2cdf(x,w,k,lambda,s,m,'method','ifft','span',1e7,'n_grid',1e7);
-p_imhof=gx2cdf(x,w,k,lambda,s,m,'method','imhof','abstol',0,'reltol',1e-10);
+p_ifft=gx2cdf(x,w,k,l,s,m,'method','ifft','span',1e7,'n_grid',1e7);
+p_imhof=gx2cdf(x,w,k,l,s,m,'method','imhof','abstol',0,'reltol',1e-10);
 ```
 ```
 Warning: Imhof method output(s) too close to limit to compute exactly, so clipping. Check the flag output, and try stricter tolerances.
 ```
 ```matlab
-p_ruben=gx2cdf(x,w,k,lambda,s,m,'method','ruben');
-p_ray=gx2cdf(x,w,k,lambda,s,m,'method','ray','n_rays',1e5);
-p_pearson=gx2cdf(x,w,k,lambda,s,m,'method','pearson');
-p_ellipse=gx2cdf(x,w,k,lambda,s,m,'method','ellipse');
+p_ruben=gx2cdf(x,w,k,l,s,m,'method','ruben');
+p_ray=gx2cdf(x,w,k,l,s,m,'method','ray','n_rays',1e5);
+p_pearson=gx2cdf(x,w,k,l,s,m,'method','pearson');
+p_ellipse=gx2cdf(x,w,k,l,s,m,'method','ellipse');
 
 figure; hold on
 plot(x,log10(p_ifft),'-k')
@@ -519,7 +519,7 @@ q=dot(x,quad.q2*x)+quad.q1'*x+quad.q0;
 Get generalized chi-square parameters corresponding to this quadratic form:
 
 ```matlab
-[w,k,lambda,s,m]=norm_quad_to_gx2_params(mu,v,quad)
+[w,k,l,s,m]=norm_quad_to_gx2_params(mu,v,quad)
 ```
 ```
 w =
@@ -528,7 +528,7 @@ w =
 k =
 1
 
-lambda =
+l =
 16.6188
 
 s =
@@ -541,7 +541,7 @@ m =
 Compare the sampled and calculated distributions of q:
 
 ```matlab
-[f,~,x]=gx2pdf('full',w,k,lambda,s,m);
+[f,~,x]=gx2pdf('full',w,k,l,s,m);
 plot(x,f); hold on
 histogram(q,'normalization','pdf','displaystyle','stairs')
 xlim([0 400])
@@ -551,7 +551,7 @@ xlim([0 400])
 Compare the sampled and calculated means and variances:
 
 ```matlab
-[mu_q,v_q]=gx2stat(w,k,lambda,s,m);
+[mu_q,v_q]=gx2stat(w,k,l,s,m);
 [mu_q mean(q)]
 ```
 ```
@@ -577,7 +577,7 @@ ans =
 0.0859
 ```
 ```matlab
-gx2cdf(50,w,k,lambda,s,m)
+gx2cdf(50,w,k,l,s,m)
 ```
 ```
 ans =
@@ -587,7 +587,7 @@ ans =
 Find a canonical quadratic form of a standard multinormal corresponding to these generalized chi-square parameters:
 
 ```matlab
-quad=gx2_to_norm_quad_params(w,k,lambda,s,m)
+quad=gx2_to_norm_quad_params(w,k,l,s,m)
 ```
 ```
 quad =
@@ -601,7 +601,7 @@ struct with fields:
 
 ```matlab
 t=linspace(-1,1,1e3);
-phi=gx2char(t,w,k,lambda,s,m);
+phi=gx2char(t,w,k,l,s,m);
 figure; plot(phi,'-o')
 ```
 ![Plot output 13](https://raw.githubusercontent.com/abhranildas/gx2-matlab/main/getting-started/compute-characteristic-function-13.png)
@@ -617,15 +617,15 @@ Take a generalized chi-square and a point $x_0$, and ask how the cdf $F(x_0)$ ch
 ```matlab
 w=[1 -5 2];
 k=[1 2 3];
-lambda=[2 3 7];
+l=[2 3 7];
 s=2;
 m=5;
 x0=10;
  
 % The gradient is a flat vector over all parameters, in the canonical order
-% [w, k, lambda, s, m] (all of w, then all of k, ...); the Hessian is the
+% [w, k, l, s, m] (all of w, then all of k, ...); the Hessian is the
 % matching square matrix.
-[grad,hess]=cdf_grad_gx2(x0,w,k,lambda,s,m)
+[grad,hess]=cdf_grad_gx2(x0,w,k,l,s,m)
 ```
 ```
 grad =
@@ -660,12 +660,12 @@ We compute derivatives only wrt λ, then use the first and second derivative of 
 $F(x_0),$ $\frac{\partial F(x_0)}{\partial \lambda_1}$ and $\frac{\partial^2 F(x_0)}{\partial \lambda_1^2}$:
 
 ```matlab
-F0=gx2cdf(x0,w,k,lambda,s,m);
-[g,H]=cdf_grad_gx2(x0,w,k,lambda,s,m,'wrt',{'lambda'});
+F0=gx2cdf(x0,w,k,l,s,m);
+[g,H]=cdf_grad_gx2(x0,w,k,l,s,m,'wrt',{'l'});
 gl=g(1); Hl=H(1,1);                     
  
 delta=linspace(-50,50,100);
-Ftrue=arrayfun(@(d) gx2cdf(x0,w,k,lambda+[d 0 0],s,m),delta);
+Ftrue=arrayfun(@(d) gx2cdf(x0,w,k,l+[d 0 0],s,m),delta);
 ```
 ```
 Warning: Imhof method output(s) too close to limit to compute exactly, so clipping. Check the flag output, and try stricter tolerances.
@@ -674,9 +674,9 @@ Warning: Imhof method output(s) too close to limit to compute exactly, so clippi
 Ftaylor=F0+gl*delta+0.5*Hl*delta.^2;
  
 figure; hold on
-plot(lambda(1)+delta,Ftrue,'k-');
-plot(lambda(1)+delta,Ftaylor,'-b');
-plot(lambda(1),F0,'bo','MarkerFaceColor','b');
+plot(l(1)+delta,Ftrue,'k-');
+plot(l(1)+delta,Ftaylor,'-b');
+plot(l(1),F0,'bo','MarkerFaceColor','b');
 xlabel('\lambda_1'); ylabel('F(x_0)');
 axis([-50 50 0 1])
 legend('true cdf','2nd-order Taylor','location','best');
@@ -745,8 +745,8 @@ title('cdf sensitivity to boundary coeff. Q_2(1,1)');
 %% helper: probability with the Q2(1,1) coefficient perturbed by d
 function p=probq(mu,v,quad,d,x0)
     quad.q2(1,1)=quad.q2(1,1)+d;
-    [w,k,lambda,s,m]=norm_quad_to_gx2_params(mu,v,quad);
-    p=gx2cdf(x0,w,k,lambda,s,m);
+    [w,k,l,s,m]=norm_quad_to_gx2_params(mu,v,quad);
+    p=gx2cdf(x0,w,k,l,s,m);
 end
 ```
 

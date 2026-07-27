@@ -1,8 +1,8 @@
-function [grad,hess]=cdf_grad_gx2(x,w,k,lambda,s,m,varargin)
+function [grad,hess]=cdf_grad_gx2(x,w,k,l,s,m,varargin)
 
 % CDF_GRAD_GX2 Returns the gradient (and optionally the Hessian) of the cdf of
 % a generalized chi-squared distribution with respect to its parameters w, k,
-% lambda, s and m. These are computed exactly, with no finite differencing.
+% l, s and m. These are computed exactly, with no finite differencing.
 %
 % Abhranil Das
 % Center for Perceptual Systems, University of Texas at Austin
@@ -14,10 +14,10 @@ function [grad,hess]=cdf_grad_gx2(x,w,k,lambda,s,m,varargin)
 % >New methods to compute the generalized chi-square distribution</a>
 %
 % Usage:
-% grad=cdf_grad_gx2(x,w,k,lambda,s,m)
-% [grad,hess]=cdf_grad_gx2(x,w,k,lambda,s,m)
-% grad=cdf_grad_gx2(x,w,k,lambda,s,m,'wrt',{'s','m'})
-% grad=cdf_grad_gx2(x,w,k,lambda,s,m,'AbsTol',0,'RelTol',1e-7,'precision','vpa')
+% grad=cdf_grad_gx2(x,w,k,l,s,m)
+% [grad,hess]=cdf_grad_gx2(x,w,k,l,s,m)
+% grad=cdf_grad_gx2(x,w,k,l,s,m,'wrt',{'s','m'})
+% grad=cdf_grad_gx2(x,w,k,l,s,m,'AbsTol',0,'RelTol',1e-7,'precision','vpa')
 %
 % Example:
 % [grad,hess]=cdf_grad_gx2(25,[1 -5 2],[1 2 3],[2 3 7],0,5)
@@ -26,14 +26,14 @@ function [grad,hess]=cdf_grad_gx2(x,w,k,lambda,s,m,varargin)
 % x         array of points at which to evaluate the gradient/Hessian of the cdf
 % w         row vector of weights of the non-central chi-squares
 % k         row vector of degrees of freedom of the non-central chi-squares
-% lambda    row vector of non-centrality paramaters (sum of squares of
+% l         row vector of non-centrality paramaters (sum of squares of
 %           means) of the non-central chi-squares
 % s         scale of normal term
 % m         offset
 %
 % Optional name-value inputs:
 % wrt       cell array selecting which parameter groups to differentiate
-%           with respect to, drawn from {'w','k','lambda','s','m'}.
+%           with respect to, drawn from {'w','k','l','s','m'}.
 %           Default is all of them. Only the requested groups are returned,
 %           in the canonical order below with the unrequested groups omitted;
 %           the Hessian is the corresponding principal submatrix. Use this to
@@ -52,7 +52,7 @@ function [grad,hess]=cdf_grad_gx2(x,w,k,lambda,s,m,varargin)
 %
 %               [ dF/dw_1 ... dF/dw_n,
 %                 dF/dk_1 ... dF/dk_n,
-%                 dF/dlambda_1 ... dF/dlambda_n,
+%                 dF/dl_1 ... dF/dl_n,
 %                 dF/ds,
 %                 dF/dm ]
 %
@@ -73,15 +73,15 @@ parser.KeepUnmatched=true;
 addRequired(parser,'x',@(x) isreal(x));
 addRequired(parser,'w',@(x) isreal(x) && isrow(x));
 addRequired(parser,'k',@(x) isreal(x) && isrow(x));
-addRequired(parser,'lambda',@(x) isreal(x) && isrow(x));
+addRequired(parser,'l',@(x) isreal(x) && isrow(x));
 addRequired(parser,'s',@(x) isreal(x) && isscalar(x));
 addRequired(parser,'m',@(x) isreal(x) && isscalar(x));
-groups={'w','k','lambda','s','m'};
+groups={'w','k','l','s','m'};
 addParameter(parser,'wrt',groups,@(c) iscell(c) && all(ismember(lower(c),groups)));
 addParameter(parser,'AbsTol',1e-10,@(x) isreal(x) && isscalar(x) && (x>=0));
 addParameter(parser,'RelTol',1e-6,@(x) isreal(x) && isscalar(x) && (x>=0));
 addParameter(parser,'precision','basic',@(x) strcmpi(x,'basic')||strcmpi(x,'vpa'));
-parse(parser,x,w,k,lambda,s,m,varargin{:});
+parse(parser,x,w,k,l,s,m,varargin{:});
 
 wrt=parser.Results.wrt;
 AbsTol=parser.Results.AbsTol;
@@ -106,18 +106,18 @@ imhof_opts=opts;
 % ---------------------------- gradient (1st output) ----------------------------
 % base blocks, computed only if a group needs them
 F=[]; f=[];
-if wanted('lambda'), F=gx2cdf(x,w,k,lambda,s,m,opts{:}); end     % dF/dlambda needs F
-if wanted('m'),      f=gx2_dens_deriv(x,w,k,lambda,s,m,0,opts{:}); end   % dF/dm = -f (robust pdf)
+if wanted('l'), F=gx2cdf(x,w,k,l,s,m,opts{:}); end     % dF/dl needs F
+if wanted('m'),      f=gx2_dens_deriv(x,w,k,l,s,m,0,opts{:}); end   % dF/dm = -f (robust pdf)
 
-% dF/dw_j = -k_j f_[k_j+2] - lambda_j f_[k_j+4]
+% dF/dw_j = -k_j f_[k_j+2] - l_j f_[k_j+4]
 if wanted('w')
     gw=zeros(n,nx);
     for j=1:n
         kp2=k; kp2(j)=kp2(j)+2;
         kp4=k; kp4(j)=kp4(j)+4;
-        f2=gx2_dens_deriv(x,w,kp2,lambda,s,m,0,opts{:});
-        f4=gx2_dens_deriv(x,w,kp4,lambda,s,m,0,opts{:});
-        gw(j,:)=-k(j)*f2-lambda(j)*f4;
+        f2=gx2_dens_deriv(x,w,kp2,l,s,m,0,opts{:});
+        f4=gx2_dens_deriv(x,w,kp4,l,s,m,0,opts{:});
+        gw(j,:)=-k(j)*f2-l(j)*f4;
     end
 end
 
@@ -125,16 +125,16 @@ end
 if wanted('k')
     gk=zeros(n,nx);
     for j=1:n
-        gk(j,:)=gx2_imhof(x,w,k,lambda,s,m,imhof_opts{:},'output','k_deriv','idx',j);
+        gk(j,:)=gx2_imhof(x,w,k,l,s,m,imhof_opts{:},'output','k_deriv','idx',j);
     end
 end
 
-% dF/dlambda_j = (F_[k_j+2] - F)/2
-if wanted('lambda')
+% dF/dl_j = (F_[k_j+2] - F)/2
+if wanted('l')
     gl=zeros(n,nx);
     for j=1:n
         kp2=k; kp2(j)=kp2(j)+2;
-        F2=gx2cdf(x,w,kp2,lambda,s,m,opts{:});
+        F2=gx2cdf(x,w,kp2,l,s,m,opts{:});
         gl(j,:)=0.5*(F2-F);
     end
 end
@@ -146,7 +146,7 @@ if wanted('s')
     if s==0
         gs=zeros(1,nx);
     else
-        fprime=gx2_dens_deriv(x,w,k,lambda,s,m,1,imhof_opts{:});
+        fprime=gx2_dens_deriv(x,w,k,l,s,m,1,imhof_opts{:});
         gs=s*fprime;
     end
 end
@@ -157,11 +157,11 @@ if wanted('m')
 end
 
 % stack in canonical order, dropping omitted groups; build the matching index
-% list 'sel' into the full [w;k;lambda;s;m] ordering for the Hessian subset
+% list 'sel' into the full [w;k;l;s;m] ordering for the Hessian subset
 grad=[]; sel=[];
 if wanted('w'),      grad=[grad; gw]; sel=[sel, 1:n];        end
 if wanted('k'),      grad=[grad; gk]; sel=[sel, n+(1:n)];    end
-if wanted('lambda'), grad=[grad; gl]; sel=[sel, 2*n+(1:n)];  end
+if wanted('l'), grad=[grad; gl]; sel=[sel, 2*n+(1:n)];  end
 if wanted('s'),      grad=[grad; gs]; sel=[sel, 3*n+1];      end
 if wanted('m'),      grad=[grad; gm]; sel=[sel, 3*n+2];      end
 
@@ -173,15 +173,15 @@ if nargout>=2
     sh=@(kk,j,d) kk+d*((1:n)==j);                            % add d to k(j)
 
     % building blocks (each returns a 1 x nx row over the evaluation points)
-    Fh   =@(kk)    gx2cdf(x,w,kk,lambda,s,m,opts{:});
-    fh   =@(kk)    gx2_dens_deriv(x,w,kk,lambda,s,m,0,opts{:});   % robust pdf
-    fp   =@(kk)    gx2_dens_deriv(x,w,kk,lambda,s,m,1,imhof_opts{:});   % robust f'
-    fpp  =@(kk)    gx2_dens_deriv(x,w,kk,lambda,s,m,2,imhof_opts{:});   % robust f''
-    fppp =@(kk)    gx2_dens_deriv(x,w,kk,lambda,s,m,3,imhof_opts{:});   % robust f'''
-    dkF  =@(kk,j)  gx2_imhof(x,w,kk,lambda,s,m,imhof_opts{:},'output','k_deriv','idx',j,'nx',0);
-    dkf  =@(kk,j)  gx2_imhof(x,w,kk,lambda,s,m,imhof_opts{:},'output','k_deriv','idx',j,'nx',1);
-    dkFxx=@(kk,j)  gx2_imhof(x,w,kk,lambda,s,m,imhof_opts{:},'output','k_deriv','idx',j,'nx',2);
-    dkkF =@(kk,i,j)gx2_imhof(x,w,kk,lambda,s,m,imhof_opts{:},'output','kk_deriv','idx',[i j],'nx',0);
+    Fh   =@(kk)    gx2cdf(x,w,kk,l,s,m,opts{:});
+    fh   =@(kk)    gx2_dens_deriv(x,w,kk,l,s,m,0,opts{:});   % robust pdf
+    fp   =@(kk)    gx2_dens_deriv(x,w,kk,l,s,m,1,imhof_opts{:});   % robust f'
+    fpp  =@(kk)    gx2_dens_deriv(x,w,kk,l,s,m,2,imhof_opts{:});   % robust f''
+    fppp =@(kk)    gx2_dens_deriv(x,w,kk,l,s,m,3,imhof_opts{:});   % robust f'''
+    dkF  =@(kk,j)  gx2_imhof(x,w,kk,l,s,m,imhof_opts{:},'output','k_deriv','idx',j,'nx',0);
+    dkf  =@(kk,j)  gx2_imhof(x,w,kk,l,s,m,imhof_opts{:},'output','k_deriv','idx',j,'nx',1);
+    dkFxx=@(kk,j)  gx2_imhof(x,w,kk,l,s,m,imhof_opts{:},'output','k_deriv','idx',j,'nx',2);
+    dkkF =@(kk,i,j)gx2_imhof(x,w,kk,l,s,m,imhof_opts{:},'output','kk_deriv','idx',[i j],'nx',0);
 
     F0=Fh(k); f0=fh(k); fp0=fp(k);
 
@@ -199,25 +199,25 @@ if nargout>=2
     end
 
     for j=1:n
-        kj=k(j); lj=lambda(j);
+        kj=k(j); lj=l(j);
         kp2=sh(k,j,2); kp4=sh(k,j,4); kp6=sh(k,j,6); kp8=sh(k,j,8);
         % global x component
-        put(IM,IL(j), -0.5*(fh(kp2)-f0));                                    % H_m,lambda_j
+        put(IM,IL(j), -0.5*(fh(kp2)-f0));                                    % H_m,l_j
         put(IM,IW(j), kj*fp(kp2)+lj*fp(kp4));                                % H_m,w_j
         % same component
-        put(IL(j),IL(j), 0.25*(Fh(kp4)-2*Fh(kp2)+F0));                       % H_lambda_j,lambda_j
-        put(IL(j),IW(j), 0.5*kj*fh(kp2)+0.5*(lj-kj-2)*fh(kp4)-0.5*lj*fh(kp6));% H_lambda_j,w_j
+        put(IL(j),IL(j), 0.25*(Fh(kp4)-2*Fh(kp2)+F0));                       % H_l_j,l_j
+        put(IL(j),IW(j), 0.5*kj*fh(kp2)+0.5*(lj-kj-2)*fh(kp4)-0.5*lj*fh(kp6));% H_l_j,w_j
         put(IW(j),IW(j), kj*(kj+2)*fp(kp4)+2*lj*(kj+2)*fp(kp6)+lj^2*fp(kp8)); % H_w_j,w_j
         % k-blocks (global/same component)
         put(IM,IK(j), -dkf(k,j));                                            % H_m,k_j = -d_x d_k F
-        put(IL(j),IK(j), 0.5*(dkF(kp2,j)-dkF(k,j)));                         % H_lambda_j,k_j
+        put(IL(j),IK(j), 0.5*(dkF(kp2,j)-dkF(k,j)));                         % H_l_j,k_j
         put(IW(j),IK(j), -fh(kp2)-kj*dkf(kp2,j)-lj*dkf(kp4,j));              % H_w_j,k_j
         put(IK(j),IK(j), dkkF(k,j,j));                                       % H_k_j,k_j (log^2 weight)
         % s-coupled entries (all carry a factor s -> 0 at s=0)
         if s==0
             put(IS,IL(j), z); put(IS,IW(j), z); put(IS,IK(j), z);
         else
-            put(IS,IL(j), 0.5*s*(fp(kp2)-fp0));                              % H_s,lambda_j
+            put(IS,IL(j), 0.5*s*(fp(kp2)-fp0));                              % H_s,l_j
             put(IS,IW(j), -s*(kj*fpp(kp2)+lj*fpp(kp4)));                     % H_s,w_j
             put(IS,IK(j), s*dkFxx(k,j));                                     % H_s,k_j = s d_x^2 d_k F
         end
@@ -227,15 +227,15 @@ if nargout>=2
     for i=1:n
         for j=1:n
             if i==j, continue; end
-            ki=k(i); li=lambda(i); kj=k(j); lj=lambda(j);
+            ki=k(i); li=l(i); kj=k(j); lj=l(j);
             kip2=sh(k,i,2); kip4=sh(k,i,4); kjp2=sh(k,j,2); kjp4=sh(k,j,4);
             % non-symmetric-in-(i,j) blocks: fill for every ordered pair
-            put(IL(i),IW(j), -0.5*(kj*(fh(sh(kip2,j,2))-fh(kjp2))+lj*(fh(sh(kip2,j,4))-fh(kjp4)))); % H_lambda_i,w_j
-            put(IL(i),IK(j), 0.5*(dkF(kip2,j)-dkF(k,j)));                                            % H_lambda_i,k_j
+            put(IL(i),IW(j), -0.5*(kj*(fh(sh(kip2,j,2))-fh(kjp2))+lj*(fh(sh(kip2,j,4))-fh(kjp4)))); % H_l_i,w_j
+            put(IL(i),IK(j), 0.5*(dkF(kip2,j)-dkF(k,j)));                                            % H_l_i,k_j
             put(IW(i),IK(j), -ki*dkf(kip2,j)-li*dkf(kip4,j));                                        % H_w_i,k_j
             % symmetric-in-(i,j) blocks: fill once
             if i<j
-                put(IL(i),IL(j), 0.25*(Fh(sh(kip2,j,2))-Fh(kip2)-Fh(kjp2)+F0));                      % H_lambda_i,lambda_j
+                put(IL(i),IL(j), 0.25*(Fh(sh(kip2,j,2))-Fh(kip2)-Fh(kjp2)+F0));                      % H_l_i,l_j
                 put(IW(i),IW(j), ki*kj*fp(sh(kip2,j,2))+ki*lj*fp(sh(kip2,j,4)) ...
                                +li*kj*fp(sh(kip4,j,2))+li*lj*fp(sh(kip4,j,4)));                      % H_w_i,w_j
                 put(IK(i),IK(j), dkkF(k,i,j));                                                       % H_k_i,k_j

@@ -1,4 +1,4 @@
-function phi=gx2char(t,w,k,lambda,s,m)
+function phi=gx2char(t,w,k,l,s,m)
 
     % GX2CHAR Returns the characteristic function of a generalized chi-squared distribution.
     %
@@ -12,7 +12,7 @@ function phi=gx2char(t,w,k,lambda,s,m)
     % >New methods to compute the generalized chi-square distribution</a>
     %
     % Usage:
-    % phi=gx2char(t,w,k,lambda,s,m)
+    % phi=gx2char(t,w,k,l,s,m)
     %
     % Example:
     % phi=gx2char(linspace(-10,10,100),[1 -5 2],[1 2 3],[2 3 7],0,5)
@@ -21,7 +21,7 @@ function phi=gx2char(t,w,k,lambda,s,m)
     % t         array of points at which to compute the characteristic function
     % w         row vector of weights of the non-central chi-squares
     % k         row vector of degrees of freedom of the non-central chi-squares
-    % lambda    row vector of non-centrality paramaters (sum of squares of
+    % l         row vector of non-centrality paramaters (sum of squares of
     %           means) of the non-central chi-squares
     % s         scale of normal term
     % m         offset
@@ -35,14 +35,14 @@ function phi=gx2char(t,w,k,lambda,s,m)
     parser = inputParser;
     addRequired(parser,'w',@(x) isreal(x) && isrow(x));
     addRequired(parser,'k',@(x) isreal(x) && isrow(x));
-    addRequired(parser,'lambda',@(x) isreal(x) && isrow(x));
+    addRequired(parser,'l',@(x) isreal(x) && isrow(x));
     addRequired(parser,'s',@(x) isreal(x) && isscalar(x));
     addRequired(parser,'m',@(x) isreal(x) && isscalar(x));
-    parse(parser,w,k,lambda,s,m);
+    parse(parser,w,k,l,s,m);
 
     t_flat=t(:); % flatten input array
 
-    phi=exp(1i*m*t_flat+1i*t_flat.*sum((w.*lambda)./(1-2i*t_flat.*w),2)-s^2*t_flat.^2/2)./...
+    phi=exp(1i*m*t_flat+1i*t_flat.*sum((w.*l)./(1-2i*t_flat.*w),2)-s^2*t_flat.^2/2)./...
         prod((1-2i*w.*t_flat).^(k/2),2);
 
     % reshape output to shape of input t

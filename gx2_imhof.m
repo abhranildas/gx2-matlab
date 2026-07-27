@@ -1,11 +1,11 @@
-function [p,errflag]=gx2_imhof(x,w,k,lambda,s,m,varargin)
+function [p,errflag]=gx2_imhof(x,w,k,l,s,m,varargin)
 
 parser=inputParser;
 parser.KeepUnmatched=true;
 addRequired(parser,'x',@(x) isreal(x));
 addRequired(parser,'w',@(x) isreal(x) && isrow(x));
 addRequired(parser,'k',@(x) isreal(x) && isrow(x));
-addRequired(parser,'lambda',@(x) isreal(x) && isrow(x));
+addRequired(parser,'l',@(x) isreal(x) && isrow(x));
 addRequired(parser,'s',@(x) isreal(x) && isscalar(x));
 addRequired(parser,'m',@(x) isreal(x) && isscalar(x));
 addOptional(parser,'side','lower',@(x) strcmpi(x,'lower') || strcmpi(x,'upper') );
@@ -16,7 +16,7 @@ addParameter(parser,'precision','basic',@(x) strcmpi(x,'basic')||strcmpi(x,'vpa'
 addParameter(parser,'AbsTol',1e-10,@(x) isreal(x) && isscalar(x) && (x>=0));
 addParameter(parser,'RelTol',1e-6,@(x) isreal(x) && isscalar(x) && (x>=0));
 
-parse(parser,x,w,k,lambda,s,m,varargin{:});
+parse(parser,x,w,k,l,s,m,varargin{:});
 output=parser.Results.output;
 idx=parser.Results.idx;
 nx=parser.Results.nx;
@@ -29,12 +29,12 @@ if strcmpi(parser.Results.precision,'basic')
     % integrate over all x points in one adaptive quadrature: for each
     % quadrature node u, the x-independent parts of the integrand (theta's
     % sum over terms, and rho) are computed once and shared across all x.
-    imhof_integral=integral(@(u) gx2_imhof_integrand(u,x(:)',w',k',lambda',s,m,output,idx,nx),...
+    imhof_integral=integral(@(u) gx2_imhof_integrand(u,x(:)',w',k',l',s,m,output,idx,nx),...
         0,inf,'AbsTol',AbsTol,'RelTol',RelTol,'ArrayValued',true);
     imhof_integral=reshape(imhof_integral,size(x));
 elseif strcmpi(parser.Results.precision,'vpa')
     syms u
-    imhof_integral=arrayfun(@(x) vpaintegral(@(u) gx2_imhof_integrand(u,x,w',k',lambda',s,m,output,idx,nx),...
+    imhof_integral=arrayfun(@(x) vpaintegral(@(u) gx2_imhof_integrand(u,x,w',k',l',s,m,output,idx,nx),...
         u,0,inf,'AbsTol',AbsTol,'RelTol',RelTol),x);
 end
 

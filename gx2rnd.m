@@ -1,4 +1,4 @@
-function r=gx2rnd(w,k,lambda,s,m,varargin)
+function r=gx2rnd(w,k,l,s,m,varargin)
 
     % GX2RND Generates generalized chi-squared random numbers.
     %
@@ -12,10 +12,10 @@ function r=gx2rnd(w,k,lambda,s,m,varargin)
     % >New methods to compute the generalized chi-square distribution</a>
     %
     % Usage:
-    % r=gx2rnd(w,k,lambda,s,m)
-    % r=gx2rnd(w,k,lambda,s,m,sz)
-    % r=gx2rnd(w,k,lambda,s,m,[sz1,sz2,...])
-    % r=gx2rnd(w,k,lambda,s,m,sz,'method',method)
+    % r=gx2rnd(w,k,l,s,m)
+    % r=gx2rnd(w,k,l,s,m,sz)
+    % r=gx2rnd(w,k,l,s,m,[sz1,sz2,...])
+    % r=gx2rnd(w,k,l,s,m,sz,'method',method)
     %
     % Example:
     % r=gx2rnd([1 -5 2],[1 2 3],[2 3 7],5,1,5)
@@ -23,7 +23,7 @@ function r=gx2rnd(w,k,lambda,s,m,varargin)
     % Required inputs:
     % w         row vector of weights of the non-central chi-squares
     % k         row vector of degrees of freedom of the non-central chi-squares
-    % lambda    row vector of non-centrality paramaters (sum of squares of
+    % l         row vector of non-centrality paramaters (sum of squares of
     %           means) of the non-central chi-squares
     % s         scale of normal term
     % m         offset
@@ -43,12 +43,12 @@ function r=gx2rnd(w,k,lambda,s,m,varargin)
     parser.KeepUnmatched=true;
     addRequired(parser,'w',@(x) isreal(x) && isrow(x));
     addRequired(parser,'k',@(x) isreal(x) && isrow(x));
-    addRequired(parser,'lambda',@(x) isreal(x) && isrow(x));
+    addRequired(parser,'l',@(x) isreal(x) && isrow(x));
     addRequired(parser,'s',@(x) isreal(x) && isscalar(x));
     addRequired(parser,'m',@(x) isreal(x) && isscalar(x));
     addOptional(parser,'sz',@(x) isreal(x));
     addParameter(parser,'method','sum',@(s) strcmpi(s,'sum') || strcmpi(s,'norm_quad'));
-    parse(parser,w,k,lambda,s,m,varargin{:});
+    parse(parser,w,k,l,s,m,varargin{:});
     sz=parser.Results.sz;
     if isscalar(sz), sz=[sz sz]; end
     method=parser.Results.method;
@@ -56,11 +56,11 @@ function r=gx2rnd(w,k,lambda,s,m,varargin)
     if strcmpi(method,'sum')
         r=normrnd(m,s,sz);
         for i=1:numel(w)
-            r=r+w(i)*ncx2rnd(k(i),lambda(i),sz);
+            r=r+w(i)*ncx2rnd(k(i),l(i),sz);
         end
     elseif strcmpi(method,'norm_quad')
         % find the quadratic form of the standard multinormal
-        quad=gx2_to_norm_quad_params(w,k,lambda,s,m);
+        quad=gx2_to_norm_quad_params(w,k,l,s,m);
         dim=numel(quad.q1);
 
         % generate standard normal vectors

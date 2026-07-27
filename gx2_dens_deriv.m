@@ -1,4 +1,4 @@
-function fd=gx2_dens_deriv(x,w,k,lambda,s,m,nx,varargin)
+function fd=gx2_dens_deriv(x,w,k,l,s,m,nx,varargin)
 
 % GX2_DENS_DERIV Robust nx-th derivative in x of the generalized chi-square pdf.
 %
@@ -19,8 +19,8 @@ function fd=gx2_dens_deriv(x,w,k,lambda,s,m,nx,varargin)
 %     is their cross-correlation with the derivatives falling on q_+.
 %
 % Usage:
-% fd=gx2_dens_deriv(x,w,k,lambda,s,m,nx)
-% fd=gx2_dens_deriv(x,w,k,lambda,s,m,nx,'AbsTol',0,'RelTol',1e-9,'precision','vpa')
+% fd=gx2_dens_deriv(x,w,k,l,s,m,nx)
+% fd=gx2_dens_deriv(x,w,k,l,s,m,nx,'AbsTol',0,'RelTol',1e-9,'precision','vpa')
 %
 % Inputs mirror gx2pdf, plus nx (the derivative order, 0 gives the pdf).
 % Optional 'AbsTol','RelTol','precision' pass through to the Imhof route and
@@ -31,14 +31,14 @@ parser.KeepUnmatched=true;
 addRequired(parser,'x',@(x) isreal(x));
 addRequired(parser,'w',@(x) isreal(x) && isrow(x));
 addRequired(parser,'k',@(x) isreal(x) && isrow(x));
-addRequired(parser,'lambda',@(x) isreal(x) && isrow(x));
+addRequired(parser,'l',@(x) isreal(x) && isrow(x));
 addRequired(parser,'s',@(x) isreal(x) && isscalar(x));
 addRequired(parser,'m',@(x) isreal(x) && isscalar(x));
 addRequired(parser,'nx',@(x) isscalar(x) && (x>=0) && (x==round(x)));
 addParameter(parser,'AbsTol',1e-10,@(x) isreal(x) && isscalar(x) && (x>=0));
 addParameter(parser,'RelTol',1e-6,@(x) isreal(x) && isscalar(x) && (x>=0));
 addParameter(parser,'n_ruben',1e3,@(x) isscalar(x) && (x>0) && (x==round(x)));
-parse(parser,x,w,k,lambda,s,m,nx,varargin{:});
+parse(parser,x,w,k,l,s,m,nx,varargin{:});
 AbsTol=parser.Results.AbsTol;
 RelTol=parser.Results.RelTol;
 n_ruben=parser.Results.n_ruben;
@@ -61,9 +61,9 @@ use_series = (s==0) && (same_sign || (D <= 2*nx+3));
 if ~use_series
     if nx==0
         % the plain pdf: use gx2pdf's default dispatch (exact where possible)
-        fd=gx2pdf(x,w,k,lambda,s,m,varargin{:});
+        fd=gx2pdf(x,w,k,l,s,m,varargin{:});
     else
-        fd=gx2_imhof(x,w,k,lambda,s,m,varargin{:},'output','dens','nx',nx);
+        fd=gx2_imhof(x,w,k,l,s,m,varargin{:},'output','dens','nx',nx);
     end
     return;
 end
@@ -72,7 +72,7 @@ end
 pos=w>0; neg=w<0;
 if all(pos) || all(neg)
     % same-sign (elliptical): differentiate Ruben's series directly
-    fd=gx2_ruben(x,w,k,lambda,m,'output','pdf','nx',nx,'n_ruben',n_ruben);
+    fd=gx2_ruben(x,w,k,l,m,'output','pdf','nx',nx,'n_ruben',n_ruben);
 else
     % mixed sign: q = q_+ - q_-, where q_+ = (positive-weight part) + m has
     % support [m,inf) and q_- = (negated negative-weight part) has support
@@ -86,10 +86,10 @@ else
     %   x >= m:  f^(nx)(x) =          int f_{q+}^(nx)(x+v) f_{q-}(v) dv
     % (see section 1.5). At x=m exactly, both floors align into a genuine cusp;
     % it is measure-zero and not hit in practice.
-    wp=w(pos);  kp=k(pos);  lp=lambda(pos);
-    wn=-w(neg); kn=k(neg);  ln=lambda(neg);   % negate -> positive weights
+    wp=w(pos);  kp=k(pos);  lp=l(pos);
+    wn=-w(neg); kn=k(neg);  ln=l(neg);   % negate -> positive weights
 
-    % Ruben's series coefficients depend only on (w,k,lambda), not on the
+    % Ruben's series coefficients depend only on (w,k,l), not on the
     % evaluation point -- compute them once per gx2_dens_deriv call and reuse
     % across every scalar quadrature callback below, rather than rebuilding
     % the series from scratch on each of the (potentially hundreds of) points

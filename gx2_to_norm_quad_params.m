@@ -1,4 +1,4 @@
-function quad=gx2_to_norm_quad_params(w,k,lambda,s,m)
+function quad=gx2_to_norm_quad_params(w,k,l,s,m)
 
     % GX2_TO_NORM_QUAD_PARAMS A generalized chi-square variable is
     % a quadratic form of a standard normal vector. This function takes
@@ -15,7 +15,7 @@ function quad=gx2_to_norm_quad_params(w,k,lambda,s,m)
     % >New methods to compute the generalized chi-square distribution</a>
     %
     % Usage:
-    % quad=gx2_to_norm_quad_params(w,k,lambda,s,m)
+    % quad=gx2_to_norm_quad_params(w,k,l,s,m)
     %
     % Example:
     % quad=gx2_to_norm_quad_params([1 -5 2],[1 2 3],[2 3 7],10,5);
@@ -23,7 +23,7 @@ function quad=gx2_to_norm_quad_params(w,k,lambda,s,m)
     % Required inputs:
     % w         row vector of weights of the non-central chi-squares
     % k         row vector of degrees of freedom of the non-central chi-squares
-    % lambda    row vector of non-centrality paramaters (sum of squares of
+    % l         row vector of non-centrality paramaters (sum of squares of
     %           means) of the non-central chi-squares
     % s         scale of normal term
     % m         offset
@@ -41,10 +41,10 @@ function quad=gx2_to_norm_quad_params(w,k,lambda,s,m)
 
     q2=repelem(w,k); % each w_i, k_i times
 
-    % each w_i*sqrt(lambda_i) at the start of its block, then 0 for the rest
+    % each w_i*sqrt(l_i) at the start of its block, then 0 for the rest
     q1=zeros(1,sum(k));
     block_starts=cumsum([1 k(1:end-1)]); % first index of each w_i block
-    q1(block_starts)=w.*sqrt(lambda);
+    q1(block_starts)=w.*sqrt(l);
     q1=-2*q1'; % multiply by -2
 
     if s % if there is a normal term,
@@ -54,5 +54,5 @@ function quad=gx2_to_norm_quad_params(w,k,lambda,s,m)
 
     quad.q2=diag(q2);
     quad.q1=q1;
-    quad.q0=dot(w,lambda)+m;
+    quad.q0=dot(w,l)+m;
 

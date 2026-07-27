@@ -92,7 +92,7 @@ opts={'AbsTol',AbsTol,'RelTol',RelTol,'precision',precision};
 % convert to gx2 params, and reuse the standardized-quadratic eigen-structure
 % (S=Sigma^{1/2}, V, and the full eigenvalues d of S*Q2*S) for the per-node
 % M^{-1}(t)=S*V*diag(1/(1-2i*t*d_j))*V'*S -- no d-by-d inverse per node.
-[w,k,lambda,s,m,aux]=norm_quad_to_gx2_params(mu,v,quad);
+[w,k,l,s,m,aux]=norm_quad_to_gx2_params(mu,v,quad);
 S=aux.S; V=aux.V; dvals=aux.d(:).';     % dvals is 1-by-d
 SigInv_mu=v\mu;                          % Sigma^{-1}*mu (real d-vector)
 
@@ -124,7 +124,7 @@ end
 
 % q0 block: dF/dq0 = -f(x0). Since q0 shifts q rigidly, this is just -pdf.
 if wanted('q0')
-    if s0, g0=Dterm([],1); else, g0=reshape(-gx2pdf(x,w,k,lambda,s,m,opts{:}),1,nx); end
+    if s0, g0=Dterm([],1); else, g0=reshape(-gx2pdf(x,w,k,l,s,m,opts{:}),1,nx); end
     grad.q0=g0;
     if nx==1, grad.q0=g0(1); end
 end
@@ -287,7 +287,7 @@ end
         % memoized robust n-th density derivative of the gx2 with k+bumpvec dof
         key=sprintf('%d_',[bumpvec n]);
         if isKey(memo,key), val=memo(key); return; end
-        val=reshape(gx2_dens_deriv(x,w,k+bumpvec,lambda,s,m,n,densopts{:}),1,nx);
+        val=reshape(gx2_dens_deriv(x,w,k+bumpvec,l,s,m,n,densopts{:}),1,nx);
         memo(key)=val;
     end
 
@@ -309,7 +309,7 @@ end
     function [Minv,mut,phi]=weights(t)
         % per-node characteristic function and the tilted covariance/mean, from
         % the shared eigen-structure: M^{-1}=S*V*diag(1/(1-2i t d_j))*V'*S.
-        phi=gx2char(t,w,k,lambda,s,m);
+        phi=gx2char(t,w,k,l,s,m);
         g=1./(1-2i*t*dvals);              % 1-by-d
         Minv=S*(V.*g)*V.'*S;
         pv=SigInv_mu+1i*t*q1c;            % p(t), d-by-1

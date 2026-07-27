@@ -1,4 +1,4 @@
-function x=gx2inv(p,w,k,lambda,s,m,varargin)
+function x=gx2inv(p,w,k,l,s,m,varargin)
 
     % GX2INV Returns the inverse cdf of a generalized chi-squared distribution.
     %
@@ -12,8 +12,8 @@ function x=gx2inv(p,w,k,lambda,s,m,varargin)
     % >New methods to compute the generalized chi-square distribution</a>
     %
     % Usage:
-    % x=gx2inv(p,w,k,lambda,s,m)
-    % x=gx2inv(p,w,k,lambda,s,m,'upper','method','imhof','AbsTol',0,'RelTol',1e-7)
+    % x=gx2inv(p,w,k,l,s,m)
+    % x=gx2inv(p,w,k,l,s,m,'upper','method','imhof','AbsTol',0,'RelTol',1e-7)
     % etc.
     %
     % Example:
@@ -26,7 +26,7 @@ function x=gx2inv(p,w,k,lambda,s,m,varargin)
     %           to invert probabilities < realmin, using ray, ellipse, or tail cdf methods.
     % w         row vector of weights of the non-central chi-squares
     % k         row vector of degrees of freedom of the non-central chi-squares
-    % lambda    row vector of non-centrality paramaters (sum of squares of
+    % l         row vector of non-centrality paramaters (sum of squares of
     %           means) of the non-central chi-squares
     % s         scale of normal term
     % m         offset
@@ -51,12 +51,12 @@ function x=gx2inv(p,w,k,lambda,s,m,varargin)
     addRequired(parser,'p',@(x) isreal(x) && all(x<=1));
     addRequired(parser,'w',@(x) isreal(x) && isrow(x));
     addRequired(parser,'k',@(x) isreal(x) && isrow(x));
-    addRequired(parser,'lambda',@(x) isreal(x) && isrow(x));
+    addRequired(parser,'l',@(x) isreal(x) && isrow(x));
     addRequired(parser,'s',@(x) isreal(x) && isscalar(x));
     addRequired(parser,'m',@(x) isreal(x) && isscalar(x));
     addOptional(parser,'side','lower',@(x) strcmpi(x,'lower') || strcmpi(x,'upper') );
 
-    parse(parser,p,w,k,lambda,s,m,varargin{:});
+    parse(parser,p,w,k,l,s,m,varargin{:});
 
     side=parser.Results.side;
 
@@ -67,14 +67,14 @@ function x=gx2inv(p,w,k,lambda,s,m,varargin)
             p=1-p;
         end
         if sign(w_unique)==1
-            x=ncx2inv(p,sum(k),sum(lambda))*w_unique+m;
+            x=ncx2inv(p,sum(k),sum(l))*w_unique+m;
         elseif sign(w_unique)==-1
-            x=ncx2inv(1-p,sum(k),sum(lambda))*w_unique+m;
+            x=ncx2inv(1-p,sum(k),sum(l))*w_unique+m;
         elseif w_unique==0
             x=0;
         end
     else
-        [mu,v]=gx2stat(w,k,lambda,s,m);
+        [mu,v]=gx2stat(w,k,l,s,m);
         sd=sqrt(v);
         if all(p>0)
             % Safeguarded Newton on gx2cdf, using the analytic pdf as the
@@ -89,11 +89,11 @@ function x=gx2inv(p,w,k,lambda,s,m,varargin)
             % upper tail. The log-probability branch stays on fzero.
             pdfargs=namedargs2cell(parser.Unmatched);
             dsgn=1; if strcmpi(side,'upper'), dsgn=-1; end
-            G =@(xx) gx2cdf(xx,w,k,lambda,s,m,varargin{:});
-            dG=@(xx) dsgn*gx2pdf(xx,w,k,lambda,s,m,pdfargs{:});
+            G =@(xx) gx2cdf(xx,w,k,l,s,m,varargin{:});
+            dG=@(xx) dsgn*gx2pdf(xx,w,k,l,s,m,pdfargs{:});
             x=gx2inv_newton(G,dG,p,mu,sd);
         else % log probability, inverted using sym
-            x=arrayfun(@(p) fzero(@(x) log_gx2cdf(x,w,k,lambda,s,m,varargin{:})-p,mu),p);
+            x=arrayfun(@(p) fzero(@(x) log_gx2cdf(x,w,k,l,s,m,varargin{:})-p,mu),p);
         end
     end
 

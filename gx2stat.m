@@ -1,4 +1,4 @@
-function [mu,v,mode]=gx2stat(w,k,lambda,s,m)
+function [mu,v,mode]=gx2stat(w,k,l,s,m)
 
     % GX2STAT Returns the mean, variance, and (optionally) mode of a generalized
     % chi-squared distribution.
@@ -13,8 +13,8 @@ function [mu,v,mode]=gx2stat(w,k,lambda,s,m)
     % >New methods to compute the generalized chi-square distribution</a>
     %
     % Usage:
-    % [mu,v]=gx2stat(w,k,lambda,s,m)
-    % [mu,v,mode]=gx2stat(w,k,lambda,s,m)
+    % [mu,v]=gx2stat(w,k,l,s,m)
+    % [mu,v,mode]=gx2stat(w,k,l,s,m)
     %
     % Example:
     % [mu,v]=gx2stat([1 -5 2],[1 2 3],[2 3 7],0,5)
@@ -23,7 +23,7 @@ function [mu,v,mode]=gx2stat(w,k,lambda,s,m)
     % Required inputs:
     % w         row vector of weights of the non-central chi-squares
     % k         row vector of degrees of freedom of the non-central chi-squares
-    % lambda    row vector of non-centrality paramaters (sum of squares of
+    % l         row vector of non-centrality paramaters (sum of squares of
     %           means) of the non-central chi-squares
     % s         scale of normal term
     % m         offset
@@ -45,13 +45,13 @@ function [mu,v,mode]=gx2stat(w,k,lambda,s,m)
     parser = inputParser;
     addRequired(parser,'w',@(x) isreal(x) && isrow(x));
     addRequired(parser,'k',@(x) isreal(x) && isrow(x));
-    addRequired(parser,'lambda',@(x) isreal(x) && isrow(x));
+    addRequired(parser,'l',@(x) isreal(x) && isrow(x));
     addRequired(parser,'s',@(x) isreal(x) && isscalar(x));
     addRequired(parser,'m',@(x) isreal(x) && isscalar(x));
-    parse(parser,w,k,lambda,s,m);
+    parse(parser,w,k,l,s,m);
 
-    mu=dot(w,k+lambda)+m;
-    v=2*dot(w.^2,k+2*lambda)+s^2;
+    mu=dot(w,k+l)+m;
+    v=2*dot(w.^2,k+2*l)+s^2;
 
     if nargout>2
         % Mode: root of f'(x)=0, seeded at the mean. fzero brackets a sign
@@ -61,10 +61,10 @@ function [mu,v,mode]=gx2stat(w,k,lambda,s,m)
         % interior stationary point is found (a monotone density, mode at the
         % support edge), fall back to maximizing the pdf on a wide interval.
         wstate=warning('off','gx2:imhofClip'); cln=onCleanup(@() warning(wstate)); %#ok<NASGU>
-        fp=@(xx) gx2_dens_deriv(xx,w,k,lambda,s,m,1);
+        fp=@(xx) gx2_dens_deriv(xx,w,k,l,s,m,1);
         try mode=fzero(fp,mu); catch, mode=NaN; end
         if ~isfinite(mode)
             sd=sqrt(v);
-            mode=fminbnd(@(xx) -gx2pdf(xx,w,k,lambda,s,m),mu-8*sd,mu+8*sd);
+            mode=fminbnd(@(xx) -gx2pdf(xx,w,k,l,s,m),mu-8*sd,mu+8*sd);
         end
     end

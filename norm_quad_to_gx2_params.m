@@ -1,4 +1,4 @@
-function [w,k,lambda,s,m,aux]=norm_quad_to_gx2_params(mu,v,quad,varargin)
+function [w,k,l,s,m,aux]=norm_quad_to_gx2_params(mu,v,quad,varargin)
 
 % NORM_QUAD_TO_GX2_PARAMS A quadratic form of a normal vector is distributed
 % as a generalized chi-squared. This function takes the multinormal parameters
@@ -23,7 +23,7 @@ function [w,k,lambda,s,m,aux]=norm_quad_to_gx2_params(mu,v,quad,varargin)
 % quad.q1=[-1;0];
 % quad.q0=-1;
 %
-% [w,k,lambda,s,m]=norm_quad_to_gx2_params(mu,v,quad)
+% [w,k,l,s,m]=norm_quad_to_gx2_params(mu,v,quad)
 %
 % Required inputs:
 % mu        column vector of normal mean
@@ -41,7 +41,7 @@ function [w,k,lambda,s,m,aux]=norm_quad_to_gx2_params(mu,v,quad,varargin)
 % Outputs:
 % w         row vector of weights of the non-central chi-squares
 % k         row vector of degrees of freedom of the non-central chi-squares
-% lambda    row vector of non-centrality paramaters (sum of squares of
+% l         row vector of non-centrality paramaters (sum of squares of
 %           means) of the non-central chi-squares
 % s         scale of normal term
 % m         offset
@@ -96,17 +96,17 @@ if merge
     [w,~,ic]=uniquetol(d(nz)); % unique non-zero eigenvalues
     k=accumarray(ic,1)'; % total dof of each eigenvalue
 
-    % lambda=arrayfun(@(x) sum((b(d==x)).^2),w)./(4*w.^2); % total non-centrality for each eigenvalue
+    % l=arrayfun(@(x) sum((b(d==x)).^2),w)./(4*w.^2); % total non-centrality for each eigenvalue
 
     b_sq_sum=accumarray(ic, b(nz).^2)';
-    lambda=(b_sq_sum./(4*w.^2)); % total non-centrality for each eigenvalue
+    l=(b_sq_sum./(4*w.^2)); % total non-centrality for each eigenvalue
 else
     w=d(nz);
     k=ones(size(w));
-    lambda=b(nz).^2./(4*w.^2);
+    l=b(nz).^2./(4*w.^2);
 end
 
-m=q0-dot(w,lambda);
+m=q0-dot(w,l);
 s=norm(b(~nz));
 
 % Optional 6th output: the eigen-structure of the standardized quadratic,

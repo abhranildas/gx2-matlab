@@ -1,5 +1,5 @@
-function f=gx2_imhof_integrand(u,x,w,k,lambda,s,m,output,idx,nx)
-% Imhof integrand for the generalized chi-square inversion (w, k, lambda are
+function f=gx2_imhof_integrand(u,x,w,k,l,s,m,output,idx,nx)
+% Imhof integrand for the generalized chi-square inversion (w, k, l are
 % column vectors here). Beyond the plain cdf/pdf it also returns the exact
 % integrands for parameter-gradient and -Hessian components (no finite
 % differencing).
@@ -19,8 +19,8 @@ function f=gx2_imhof_integrand(u,x,w,k,lambda,s,m,output,idx,nx)
 if nargin<9, idx=[]; end
 if nargin<10 || isempty(nx), nx=0; end
 
-theta=sum(k.*atan(w*u)+(lambda.*(w*u))./(1+w.^2*u.^2),1)/2+u*(m-x)/2;
-rho=prod(((1+w.^2*u.^2).^(k/4)).*exp(((w.^2*u.^2).*lambda)./(2*(1+w.^2*u.^2))),1) .* exp(u.^2*s^2/8);
+theta=sum(k.*atan(w*u)+(l.*(w*u))./(1+w.^2*u.^2),1)/2+u*(m-x)/2;
+rho=prod(((1+w.^2*u.^2).^(k/4)).*exp(((w.^2*u.^2).*l)./(2*(1+w.^2*u.^2))),1) .* exp(u.^2*s^2/8);
 
 if strcmpi(output,'cdf')
     f=sin(theta)./(u.*rho);
