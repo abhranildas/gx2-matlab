@@ -719,7 +719,7 @@ dF/dq0: -0.0962
 
 We compute the second-order Taylor approximation of $F(x_0)$ wrt variations in $\mathbf{Q}_{11}$.
 
-$F(x_0),$ $\frac{\partial F(x_0)}{\partial \mathbf{Q}_{11}}$ and $\frac{\partial^2 F(x_0)}{\partial \mathbf{Q}_{11}^2}$:
+$F(x_0),$ $\frac{\partial F(x_0)}{\partial Q_{11}}$ and $\frac{\partial^2 F(x_0)}{\partial \mathbf{Q}_{11}^2}$:
 
 ```matlab
 [w2,k2,l2,s2,m2]=norm_quad_to_gx2_params(mu,v,quad);
