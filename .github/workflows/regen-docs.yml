@@ -1,7 +1,7 @@
 name: Sync getting-started docs from live script
 
 # Whenever the exported Getting Started HTML changes on main, copy its
-# current (already rendered) content into README.md and getting-started/*.png,
+# current (already rendered) content into README.md and doc/getting-started/*.png,
 # and commit the result back to main. This does NOT run Matlab or execute
 # anything -- it only reflects whatever state you last exported, so this step
 # stays fast.
@@ -39,7 +39,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add README.md getting-started/
+          git add README.md doc/getting-started/
           if git diff --cached --quiet; then
             echo "No changes to commit"
           else

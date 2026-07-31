@@ -100,6 +100,18 @@ else
     fm=@(v,n) gx2_ruben_eval(coeffs_n,v,0,'output','pdf','nx',n);
     fd=arrayfun(@(xx) conv_dens_deriv(xx,m,nx,fp,fm,AbsTol,RelTol),x);
 end
+
+% Either series route (same-sign Ruben, or the mixed-sign convolution above)
+% can become numerically unstable for extreme non-centralities (e.g. a
+% quadratic boundary whose curvature is small relative to its linear part),
+% where the underlying expansion or its inner integral returns a non-finite
+% value. Recover those points with the direct Imhof inversion instead --
+% slower, but it doesn't rely on the same series expansion, so it stays
+% robust here.
+bad=~isfinite(fd);
+if any(bad)
+    fd(bad)=gx2_imhof(x(bad),w,k,l,s,m,varargin{:},'output','dens','nx',nx);
+end
 fd=reshape(fd,size(x));
 end
 

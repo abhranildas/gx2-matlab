@@ -64,15 +64,32 @@ masstol=1e-14;
 a=nan(n_ruben,1);
 a(1)=sqrt(exp(-sum(l))*beta^M*prod(w.^(-k)));
 if a(1)<realmin
-    error('Underflow error: some series coefficients are smaller than machine precision.')
+    % The true leading coefficient underflows (e.g. when some non-centrality
+    % in l is large, as happens for a quadratic form whose curvature is small
+    % relative to its linear part). The a_j are nonnegative and sum to 1, but
+    % that overall scale is lost here -- only their relative sizes survive,
+    % since the recursion below is linear and homogeneous in a(1:j). Recover
+    % the coefficients up to that lost scale (starting from b(1)=1 instead of
+    % the unrepresentable true a(1)), then renormalize at the end so they sum
+    % to 1, exactly as they must.
+    b=nan(n_ruben,1);
+    b(1)=1;
+    cum=b(1); N=n_ruben;
+    for j=1:n_ruben-1
+        b(j+1)=dot(flip(g(1:j)),b(1:j))/(2*j);
+        cum=cum+b(j+1);
+        if b(j+1)<masstol*cum, N=j+1; break; end
+    end
+    a=b(1:N)/cum;
+else
+    cum=a(1); N=n_ruben;
+    for j=1:n_ruben-1
+        a(j+1)=dot(flip(g(1:j)),a(1:j))/(2*j);
+        cum=cum+a(j+1);
+        if 1-cum<masstol, N=j+1; break; end
+    end
+    a=a(1:N);
 end
-cum=a(1); N=n_ruben;
-for j=1:n_ruben-1
-    a(j+1)=dot(flip(g(1:j)),a(1:j))/(2*j);
-    cum=cum+a(j+1);
-    if 1-cum<masstol, N=j+1; break; end
-end
-a=a(1:N);
 
 coeffs=struct('a',a,'N',N,'beta',beta,'M',M,'w_pos',w_pos);
 

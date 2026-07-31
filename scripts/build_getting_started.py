@@ -7,7 +7,7 @@ Matlab: Live Editor > Save > Export to HTML), and is regenerated locally
 whenever the live script changes. This script does not run Matlab or execute
 anything -- it parses that already-rendered HTML, extracts headings, code,
 and their text/figure outputs in document order, saves each figure into
-getting-started/*.png, and rewrites the auto-generated block of README.md's
+doc/getting-started/*.png, and rewrites the auto-generated block of README.md's
 "Examples" section to match.
 
 Run this after re-exporting the live script to HTML:
@@ -28,7 +28,7 @@ from bs4 import BeautifulSoup, Tag
 
 REPO = Path(__file__).resolve().parent.parent
 HTML_PATH = REPO / "doc" / "html" / "GettingStarted.html"
-IMAGES_DIR = REPO / "getting-started"
+IMAGES_DIR = REPO / "doc" / "getting-started"
 README_PATH = REPO / "README.md"
 
 # Images are embedded via absolute raw.githubusercontent.com URLs (matching
@@ -164,7 +164,7 @@ def process_codeblock(
                 used_files.add(filename)
                 (IMAGES_DIR / filename).write_bytes(png)
                 alt = first_comment[0] or f"Plot output {fig_counter[0]}"
-                lines.append(f"![{alt}]({RAW_BASE}/getting-started/{filename})")
+                lines.append(f"![{alt}]({RAW_BASE}/doc/getting-started/{filename})")
             else:
                 text = render_output(out_container)
                 if text:

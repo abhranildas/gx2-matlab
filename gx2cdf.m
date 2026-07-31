@@ -135,9 +135,16 @@ if strcmpi(method,'auto')
             p=normcdf(x,m,s,'upper');
         end
     elseif ~s
-        if (all(w>0) && strcmpi(side,'lower'))||(all(w<0) && strcmpi(side,'upper'))  % no s and w same sign
+        if all(w>0)||all(w<0) % no s and w same sign: gx2_ruben handles either
+            % side directly (it evaluates chi2cdf(...,'upper') term-by-term
+            % for the non-native side, rather than subtracting from 1), so
+            % there's no need to restrict this route to the side matching
+            % the weights' sign.
             try
                 [p,p_err]=gx2_ruben(x,w,k,l,m,varargin{:});
+                if any(~isfinite(p(:)))
+                    error('gx2_ruben:nonfinite','gx2_ruben returned a non-finite value.');
+                end
             catch
                 [p,p_err]=gx2_imhof(x,w,k,l,0,m,varargin{:});
             end

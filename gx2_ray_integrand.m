@@ -29,20 +29,32 @@ q0=quad.q0;
 % discriminant of the quadratic across rays and levels
 delta2=q1.^2-4*q2.*(q0-x); % delta^2
 root_exists=delta2>0; % levels where linear or quadratic roots exist
-quad_root_exists=root_exists & q2; % levels where quadratic roots exist
+
+% treat curvature q2 as zero wherever it contributes negligibly to the
+% discriminant relative to q1^2, not just where q2==0 exactly. This is
+% precisely the regime where (-q1 +/- delta)/(2*q2) suffers catastrophic
+% cancellation in the numerator before dividing by a near-zero q2,
+% producing near-infinite/NaN roots. These rays are routed through the
+% same stable linear-root formula already used for exactly-vanishing q2
+% (see TODO.md item 1, fix option 1).
+q2_negligible=abs(4*q2.*(q0-x))<sqrt(eps)*q1.^2;
+q2_zero=(~q2)|q2_negligible; % effectively-zero curvature, levels x rays
+
+quad_root_exists=root_exists & ~q2_zero; % levels where quadratic roots are reliably computed
 delta=nan(size(delta2));
 delta(quad_root_exists)=sqrt(delta2(quad_root_exists)); % populate only with quad delta for now
 
-% linear_root_exists=repmat(~q2 & q1, [numel(x) 1]); % levels where linear roots exist
-
 % sorted roots across rays
-z=(-q1+cat(3,-1,1).*delta)./(2*abs(q2)); % quadratic roots where q2 ~= 0
-if nnz(~q2)
-    z(:,~q2,1)=-(q0-x)./q1(~q2); % linear roots where q2=0
+z=(-q1+cat(3,-1,1).*delta)./(2*abs(q2)); % quadratic roots where q2 is not negligible
+if nnz(q2_zero)
+    z_lin=-(q0-x)./q1; % linear roots, across levels x rays
+    z1=z(:,:,1); z1(q2_zero)=z_lin(q2_zero); z(:,:,1)=z1;
+    z2=z(:,:,2); z2(q2_zero)=nan; z(:,:,2)=z2;
 end
 
 if strcmpi(output,'prob')
-    init_sign_rays=sign(4*sign(q2)-2*sign(q1)+sign(q0-x));
+    q2_sign=sign(q2).*~q2_zero; % zero out curvature sign for effectively-linear rays, consistent with the root override above
+    init_sign_rays=sign(4*q2_sign-2*sign(q1)+sign(q0-x));
     [Phibar_big,Phibar_small]=Phibar_ray_split(z,dim);
     p_rays_big=init_sign_rays+1+init_sign_rays.*(Phibar_big(:,:,2)-Phibar_big(:,:,1));
     p_rays_small=init_sign_rays.*(Phibar_small(:,:,2)-Phibar_small(:,:,1));

@@ -111,7 +111,7 @@ figure;
 histogram(r,'EdgeColor','none')
 xline(mode,'-',{'expected mode'},'labelorientation','aligned')
 ```
-![Plot output 1](https://raw.githubusercontent.com/abhranildas/gx2-matlab/main/getting-started/generate-random-samples-1.png)
+![Plot output 1](https://raw.githubusercontent.com/abhranildas/gx2-matlab/main/doc/getting-started/generate-random-samples-1.png)
 
 ### Compute PDF, CDF and inverse CDF with default methods
 
@@ -184,7 +184,7 @@ histogram(r,'normalization','pdf','displaystyle','stairs')
 xline(x_med,'-',{'median'},'labelorientation','aligned') % mark the computed median
 xlim([-250 100])
 ```
-![compute the PDF over most of the span of the distribution.](https://raw.githubusercontent.com/abhranildas/gx2-matlab/main/getting-started/compute-pdf-cdf-and-inverse-cdf-with-default-methods-2.png)
+![compute the PDF over most of the span of the distribution.](https://raw.githubusercontent.com/abhranildas/gx2-matlab/main/doc/getting-started/compute-pdf-cdf-and-inverse-cdf-with-default-methods-2.png)
 ```matlab
 % compute CDF over most of the span of the distribution.
 % the 'full' argument uses the IFFT method, good for quick rough plots,
@@ -200,7 +200,7 @@ xline(x_med,'-',{'median'},'labelorientation','aligned')
 yline(0.5)
 xlim([-200 100])
 ```
-![compute CDF over most of the span of the distribution.](https://raw.githubusercontent.com/abhranildas/gx2-matlab/main/getting-started/compute-pdf-cdf-and-inverse-cdf-with-default-methods-3.png)
+![compute CDF over most of the span of the distribution.](https://raw.githubusercontent.com/abhranildas/gx2-matlab/main/doc/getting-started/compute-pdf-cdf-and-inverse-cdf-with-default-methods-3.png)
 
 ### Compute CDF, PDF and inverse CDF with each exact method and its settings
 
@@ -234,7 +234,7 @@ plot(x,p_imhof,'.b')
 plot(x,p_ray,'or')
 legend('IFFT','Imhof','ray')
 ```
-![now compute within this range](https://raw.githubusercontent.com/abhranildas/gx2-matlab/main/getting-started/a-non-elliptic-distribution-4.png)
+![now compute within this range](https://raw.githubusercontent.com/abhranildas/gx2-matlab/main/doc/getting-started/a-non-elliptic-distribution-4.png)
 ```matlab
 % compute PDF
 f_ifft=gx2pdf(x,w,k,l,s,m,'method','ifft');
@@ -247,7 +247,7 @@ plot(x,f_imhof,'.b')
 plot(x,f_ray,'or')
 legend('IFFT','Imhof','ray')
 ```
-![compute PDF](https://raw.githubusercontent.com/abhranildas/gx2-matlab/main/getting-started/a-non-elliptic-distribution-5.png)
+![compute PDF](https://raw.githubusercontent.com/abhranildas/gx2-matlab/main/doc/getting-started/a-non-elliptic-distribution-5.png)
 ```matlab
 % Compute quantiles for tiny cdf values of 1e-1000 and 1e-2000, by supplying
 % their log10 values. Use a forward cdf method that can get down to such tiny values.
@@ -329,7 +329,7 @@ plot(x,p_ray,'or')
 plot(x,p_ruben,'og','MarkerSize',8)
 legend('IFFT','Imhof','ray', 'Ruben')
 ```
-![now compute within this range](https://raw.githubusercontent.com/abhranildas/gx2-matlab/main/getting-started/an-elliptic-distribution-6.png)
+![now compute within this range](https://raw.githubusercontent.com/abhranildas/gx2-matlab/main/doc/getting-started/an-elliptic-distribution-6.png)
 ```matlab
 % compute PDF
 f_ifft=gx2pdf(x,w,k,l,s,m,'method','ifft');
@@ -344,7 +344,7 @@ plot(x,f_ray,'or')
 plot(x,f_ruben,'og','MarkerSize',8)
 legend('IFFT','Imhof','ray', 'Ruben')
 ```
-![compute PDF](https://raw.githubusercontent.com/abhranildas/gx2-matlab/main/getting-started/an-elliptic-distribution-7.png)
+![compute PDF](https://raw.githubusercontent.com/abhranildas/gx2-matlab/main/doc/getting-started/an-elliptic-distribution-7.png)
 ```matlab
 % Compute quantiles for tiny cdf values of 1e-1000 and 1e-2000, by supplying
 % their log10 values. Use a forward cdf method that can get down to such tiny values.
@@ -412,7 +412,7 @@ axis([-5e2 200 -30 0])
 legend('IFFT','ray','tail', 'pearson','Imhof')
 ylabel('$\log_{10} p$','Interpreter','latex')
 ```
-![tail approximation for lower tail. Mentioning 'lower' is needed here.](https://raw.githubusercontent.com/abhranildas/gx2-matlab/main/getting-started/compute-cdf-in-an-infinite-lower-tail-8.png)
+![tail approximation for lower tail. Mentioning 'lower' is needed here.](https://raw.githubusercontent.com/abhranildas/gx2-matlab/main/doc/getting-started/compute-cdf-in-an-infinite-lower-tail-8.png)
 
 #### Compute PDF in an infinite upper tail
 
@@ -444,7 +444,7 @@ axis([0 500 -30 0])
 legend('IFFT','ray','tail', 'pearson','Imhof')
 ylabel('$\log_{10} f$','Interpreter','latex')
 ```
-![tail approximation for upper tail. Mentioning 'upper' is needed here.](https://raw.githubusercontent.com/abhranildas/gx2-matlab/main/getting-started/compute-pdf-in-an-infinite-upper-tail-9.png)
+![tail approximation for upper tail. Mentioning 'upper' is needed here.](https://raw.githubusercontent.com/abhranildas/gx2-matlab/main/doc/getting-started/compute-pdf-in-an-infinite-upper-tail-9.png)
 
 #### Compute CDF in a finite lower tail
 
@@ -483,7 +483,7 @@ set(gca,'xscale','log')
 legend('IFFT','ray','ellipse', 'pearson','Imhof','Ruben','Location', 'southeast')
 ylabel('$\log_{10} p$','Interpreter','latex')
 ```
-![Plot output 10](https://raw.githubusercontent.com/abhranildas/gx2-matlab/main/getting-started/compute-cdf-in-a-finite-lower-tail-10.png)
+![Plot output 10](https://raw.githubusercontent.com/abhranildas/gx2-matlab/main/doc/getting-started/compute-cdf-in-a-finite-lower-tail-10.png)
 
 ### Distribution of quadratic form of a normal variable
 
@@ -500,7 +500,7 @@ Sample normal random vectors:
 x=mvnrnd(mu,v,1e5)';
 figure; plot(x(1,:),x(2,:),'.')
 ```
-![Plot output 11](https://raw.githubusercontent.com/abhranildas/gx2-matlab/main/getting-started/distribution-of-quadratic-form-of-a-normal-variable-11.png)
+![Plot output 11](https://raw.githubusercontent.com/abhranildas/gx2-matlab/main/doc/getting-started/distribution-of-quadratic-form-of-a-normal-variable-11.png)
 
 Quadratic form $q(\mathbf{x})=(x_1+x_2)^2-x_1-1$ = [x1;x2]'*[1 1; 1 1]*[x1;x2] + [-1;0]'*[x1;x2] -1
 
@@ -546,7 +546,7 @@ plot(x,f); hold on
 histogram(q,'normalization','pdf','displaystyle','stairs')
 xlim([0 400])
 ```
-![Plot output 12](https://raw.githubusercontent.com/abhranildas/gx2-matlab/main/getting-started/distribution-of-quadratic-form-of-a-normal-variable-12.png)
+![Plot output 12](https://raw.githubusercontent.com/abhranildas/gx2-matlab/main/doc/getting-started/distribution-of-quadratic-form-of-a-normal-variable-12.png)
 
 Compare the sampled and calculated means and variances:
 
@@ -604,7 +604,7 @@ t=linspace(-1,1,1e3);
 phi=gx2char(t,w,k,l,s,m);
 figure; plot(phi,'-o')
 ```
-![Plot output 13](https://raw.githubusercontent.com/abhranildas/gx2-matlab/main/getting-started/compute-characteristic-function-13.png)
+![Plot output 13](https://raw.githubusercontent.com/abhranildas/gx2-matlab/main/doc/getting-started/compute-characteristic-function-13.png)
 
 ### 1st & 2nd derivatives (gradient & Hessian) of CDF wrt distribution parameters
 
@@ -683,7 +683,7 @@ legend('true cdf','2nd-order Taylor','location','best');
 legend boxoff
 title('cdf sensitivity to a non-centrality \lambda_1');
 ```
-![Plot output 14](https://raw.githubusercontent.com/abhranildas/gx2-matlab/main/getting-started/taylor-picture-vary-one-native-parameter-and-predict-the-cdf-14.png)
+![Plot output 14](https://raw.githubusercontent.com/abhranildas/gx2-matlab/main/doc/getting-started/taylor-picture-vary-one-native-parameter-and-predict-the-cdf-14.png)
 
 #### Gradient and Hessian wrt the parameters of the quadratic boundary
 
@@ -740,7 +740,7 @@ legend('true cdf','2nd-order Taylor','location','best');
 legend boxoff
 title('cdf sensitivity to boundary coeff. Q_2(1,1)');
 ```
-![Plot output 15](https://raw.githubusercontent.com/abhranildas/gx2-matlab/main/getting-started/taylor-picture-vary-one-boundary-parameter-and-predict-the-cdf-15.png)
+![Plot output 15](https://raw.githubusercontent.com/abhranildas/gx2-matlab/main/doc/getting-started/taylor-picture-vary-one-boundary-parameter-and-predict-the-cdf-15.png)
 ```matlab
 %% helper: probability with the Q2(1,1) coefficient perturbed by d
 function p=probq(mu,v,quad,d,x0)
