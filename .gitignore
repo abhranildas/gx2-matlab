@@ -1,4 +1,5 @@
 *.asv
 *.mltbx
 *.prj
-test.m
+tinker.m
+tests/bench_out

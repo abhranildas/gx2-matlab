@@ -1,7 +1,7 @@
 function [grad,hess]=finalize_grad_hess(raw_grad,raw_hess,want_hess,nx)
 
 % FINALIZE_GRAD_HESS Squeeze raw (trailing-nx) grad/Hessian structs from
-% BOUNDARY_RAW/RESOLVE_CUSP_TERMS into the public CDF_GRAD_NORM_QUAD/
+% BOUNDARY_RAW/RESOLVE_CUSP_TERMS into the public CDF_GRAD_BD/
 % NORM_ERR_GRAD_BD return shapes.
 %
 % Internal helper, not meant to be called directly.

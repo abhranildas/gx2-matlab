@@ -8,7 +8,7 @@ function [resolved_grad,resolved_hess]=resolve_cusp_terms(raw_grad,raw_hess,at_c
 % inversion_grad_hess(s_eff,want_hess) is the probe: the (always valid,
 % cusp-independent) s~=0 inversion route at a shrinking sequence of
 % artificial normal terms, in the same raw shape as raw_grad/raw_hess.
-% CDF_GRAD_NORM_QUAD passes a single class's own probe; NORM_ERR_GRAD_BD
+% CDF_GRAD_BD passes a single class's own probe; NORM_ERR_GRAD_BD
 % passes the *combined* p1*F1-p0*F0 probe instead, so that a real
 % cancellation between the two classes' divergences shows up as convergence
 % here rather than being lost by resolving each class's infinity

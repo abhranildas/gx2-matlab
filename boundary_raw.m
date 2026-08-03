@@ -1,19 +1,19 @@
 function [raw_grad,raw_hess,at_cusp,cusp_scale,inversion_grad_hess,nx]=boundary_raw(x,mu,v,quad,wrt,want_hess,AbsTol,RelTol,precision,n_ruben)
 
-% BOUNDARY_RAW Shared machinery behind CDF_GRAD_NORM_QUAD and
+% BOUNDARY_RAW Shared machinery behind CDF_GRAD_BD and
 % NORM_ERR_GRAD_BD: one class's raw (pre-cusp-resolution, pre-squeeze,
 % trailing-nx) gradient/Hessian blocks for F(x0)=P(q(x)<=x0), plus
 % everything needed to resolve a cusp there -- the at_cusp mask, its scale,
 % and a function handle inversion_grad_hess(s_eff,want_hess) giving the
 % s~=0 inversion route's grad/Hessian at an arbitrary artificial normal
-% term. CDF_GRAD_NORM_QUAD resolves the cusp on this class alone;
+% term. CDF_GRAD_BD resolves the cusp on this class alone;
 % NORM_ERR_GRAD_BD instead combines two classes' raw output and inversion
 % probes *before* resolving, since resolving each class's infinity
 % independently and then subtracting can throw away a genuine inf-inf
 % cancellation in the combined error.
 %
 % Internal helper, not meant to be called directly -- see
-% CDF_GRAD_NORM_QUAD for the documented public interface.
+% CDF_GRAD_BD for the documented public interface.
 %
 % Abhranil Das
 % Center for Perceptual Systems, University of Texas at Austin
@@ -149,7 +149,7 @@ if want_hess
         % it beyond the gradient makes these t-weighted). One array-valued
         % integration returns all blocks; they are then unpacked.
         if ~strcmpi(precision,'basic')
-            warning('cdf_grad_norm_quad:hessvpa',...
+            warning('cdf_grad_bd:hessvpa',...
                 'The Hessian uses the ''basic'' integration path; ''precision'' applies to the gradient only.');
         end
         Hraw=integral(@(t) hess_integrand(t,s),0,inf,'ArrayValued',true,'AbsTol',AbsTol,'RelTol',RelTol);

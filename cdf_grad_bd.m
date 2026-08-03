@@ -1,6 +1,6 @@
-function [grad,hess]=cdf_grad_norm_quad(x,mu,v,quad,varargin)
+function [grad,hess]=cdf_grad_bd(x,mu,v,quad,varargin)
 
-% CDF_GRAD_NORM_QUAD Gradient (and optionally Hessian) of the cdf of a quadratic
+% CDF_GRAD_BD Gradient (and optionally Hessian) of the cdf of a quadratic
 % form q(x)=x'*Q2*x + q1'*x + q0 of a normal vector x~N(mu,v), with respect to
 % the quadratic's coefficients Q2, q1, q0 (holding mu and v fixed).
 %
@@ -18,14 +18,14 @@ function [grad,hess]=cdf_grad_norm_quad(x,mu,v,quad,varargin)
 % >New methods to compute the generalized chi-square distribution</a>
 %
 % Usage:
-% grad=cdf_grad_norm_quad(x,mu,v,quad)
-% grad=cdf_grad_norm_quad(x,mu,v,quad,'wrt',{'q2','q0'})
-% grad=cdf_grad_norm_quad(x,mu,v,quad,'AbsTol',0,'RelTol',1e-7,'precision','vpa')
+% grad=cdf_grad_bd(x,mu,v,quad)
+% grad=cdf_grad_bd(x,mu,v,quad,'wrt',{'q2','q0'})
+% grad=cdf_grad_bd(x,mu,v,quad,'AbsTol',0,'RelTol',1e-7,'precision','vpa')
 %
 % Example:
 % mu=[1;2]; v=[2 1; 1 3];
 % quad.q2=[1 1; 1 1]; quad.q1=[-1;0]; quad.q0=-1;
-% grad=cdf_grad_norm_quad(0,mu,v,quad)
+% grad=cdf_grad_bd(0,mu,v,quad)
 %
 % Required inputs:
 % x         array of thresholds x0 at which to evaluate the gradient of the cdf

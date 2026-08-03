@@ -46,7 +46,7 @@ function [w,k,l,s,m,aux]=norm_quad_to_gx2_params(mu,v,quad,varargin)
 % s         scale of normal term
 % m         offset
 % aux       (optional 6th output) struct with the eigen-structure of the
-%           standardized quadratic S*Q2*S, reused by cdf_grad_norm_quad:
+%           standardized quadratic S*Q2*S, reused by cdf_grad_bd:
 %           S (=Sigma^{1/2}), V (eigenvectors), d (eigenvalues, row), and
 %           b (=V'*S*(2*Q2*mu+q1)). These are the full, pre-merge quantities.
 %
@@ -93,13 +93,23 @@ dtol=max(abs(d))*numel(d)*eps;
 nz=abs(d)>dtol;                       % nonzero (chi-square) eigenvalues
 
 if merge
-    [w,~,ic]=uniquetol(d(nz)); % unique non-zero eigenvalues
-    k=accumarray(ic,1)'; % total dof of each eigenvalue
+    if any(nz)
+        [w,~,ic]=uniquetol(d(nz)); % unique non-zero eigenvalues
+        k=accumarray(ic,1)'; % total dof of each eigenvalue
 
-    % l=arrayfun(@(x) sum((b(d==x)).^2),w)./(4*w.^2); % total non-centrality for each eigenvalue
+        % l=arrayfun(@(x) sum((b(d==x)).^2),w)./(4*w.^2); % total non-centrality for each eigenvalue
 
-    b_sq_sum=accumarray(ic, b(nz).^2)';
-    l=(b_sq_sum./(4*w.^2)); % total non-centrality for each eigenvalue
+        b_sq_sum=accumarray(ic, b(nz).^2)';
+        l=(b_sq_sum./(4*w.^2)); % total non-centrality for each eigenvalue
+    else
+        % No nonzero eigenvalues at all (a purely linear q(x), e.g. Q2==0
+        % exactly) -- d(nz)/b(nz) degenerate to a 0x0 array rather than a
+        % proper empty row/column in this corner case (only when *every*
+        % eigenvalue is exactly zero, not just some), and uniquetol/
+        % accumarray don't agree on that shape. Skip them entirely: there's
+        % nothing to merge or accumulate.
+        w=zeros(1,0); k=zeros(1,0); l=zeros(1,0);
+    end
 else
     w=d(nz);
     k=ones(size(w));
@@ -110,7 +120,7 @@ m=q0-dot(w,l);
 s=norm(b(~nz));
 
 % Optional 6th output: the eigen-structure of the standardized quadratic,
-% shared by cdf_grad_norm_quad so it need not redo the eigendecomposition.
+% shared by cdf_grad_bd so it need not redo the eigendecomposition.
 % These are the FULL (pre-merge) quantities: sqrt_v is the symmetric square
 % root S=Sigma^{1/2}; V holds the eigenvectors and d the eigenvalues of
 % S*Q2*S (its eigenvalues are the gx2 weights, with multiplicity the dof);

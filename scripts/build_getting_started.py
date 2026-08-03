@@ -1,14 +1,20 @@
 #!/usr/bin/env python
-"""Sync the getting-started example section of README.md from the getting
-started guide, doc/html/GettingStarted.html.
+"""Regenerate README.md in full from the getting started guide,
+doc/html/GettingStarted.html.
 
 doc/html/GettingStarted.html is exported from doc/GettingStarted.mlx (in
 Matlab: Live Editor > Save > Export to HTML), and is regenerated locally
 whenever the live script changes. This script does not run Matlab or execute
-anything -- it parses that already-rendered HTML, extracts headings, code,
-and their text/figure outputs in document order, saves each figure into
-doc/getting-started/*.png, and rewrites the auto-generated block of README.md's
-"Examples" section to match.
+anything -- it parses that already-rendered HTML, extracts headings, text,
+lists, code and their text/figure outputs in document order, saves each
+figure into doc/getting-started/*.png, and rewrites README.md entirely: a
+small fixed header (the logo image and File Exchange badge -- the one thing
+that can't live inside a Live Script, which has no way to embed a clickable
+image) followed by the live script's own content verbatim, one level down
+from its title (title -> "#", used by the header above; everything else ->
+"##"/"###"). README.md has no other hand-maintained content of its own:
+every section lives in the live script, so there is exactly one place to
+edit each piece of documentation, never both.
 
 Run this after re-exporting the live script to HTML:
 
@@ -37,16 +43,30 @@ README_PATH = REPO / "README.md"
 # to resolve against (e.g. a File Exchange-synced description).
 RAW_BASE = "https://raw.githubusercontent.com/abhranildas/gx2-matlab/main"
 
-BEGIN_MARKER = (
-    "<!-- BEGIN GENERATED: getting-started "
-    "(do not edit by hand; regenerate with `python scripts/build_getting_started.py`) -->"
+# The only hand-maintained content in README.md. A Live Script has no way to
+# embed a *clickable* image (only plain text can be a hyperlink), so the logo
+# and File Exchange badge -- both linked images -- can't be authored inside
+# doc/GettingStarted.mlx itself and live here instead. Everything else in
+# README.md comes from the live script.
+README_HEADER = (
+    "<!-- This file is generated in full from doc/GettingStarted.mlx (via its "
+    "HTML export, doc/html/GettingStarted.html) -- do not edit by hand, other "
+    "than the logo/badge line below; regenerate with "
+    "`python scripts/build_getting_started.py` -->\n\n"
+    '<p align="center">\n'
+    f'  <img src="{RAW_BASE}/gx2_icon.png" alt="gx2" width="260">\n'
+    "</p>\n\n"
+    "# Generalized chi-square distribution "
+    "[![View Generalized chi-square distribution on File Exchange]"
+    "(https://www.mathworks.com/matlabcentral/images/matlab-file-exchange.svg)]"
+    "(https://www.mathworks.com/matlabcentral/fileexchange/85028-generalized-chi-square-distribution)\n\n"
 )
-END_MARKER = "<!-- END GENERATED: getting-started -->"
 
-# Live-script headings render as h1 (title, skipped -- README's own header
-# covers it) / h2 / h3; demoted by one level to sit under README's own
-# "## Examples" heading.
-HEADING_MARKDOWN = {"h2": "###", "h3": "####"}
+# Live-script headings render as h1 (title -- skipped, since README's own
+# header above already covers it) / h2 / h3, kept at the same level: h2
+# sections sit directly under the README's title, exactly as they do under
+# the live script's.
+HEADING_MARKDOWN = {"h2": "##", "h3": "###"}
 
 VALUE_CLASSES = {
     "embeddedOutputsVariableMatrixElement",
@@ -62,9 +82,25 @@ def slugify(text: str) -> str:
 
 
 def latexify(tag: Tag) -> str:
-    """Replace Matlab's rendered-equation <img> spans with their source LaTeX."""
+    """Replace Matlab's rendered-equation <img> spans with their source LaTeX,
+    inline-styled (bold/italic/monospace) spans with markdown syntax, and
+    hyperlinks with markdown link syntax."""
     for eq in tag.select("span[texencoding]"):
         eq.replace_with(f"${eq['texencoding']}$")
+    for span in tag.select("span[style]"):
+        text = span.get_text()
+        style = span["style"]
+        if not text or not isinstance(style, str):
+            continue
+        if "monospace" in style:
+            text = f"`{text}`"
+        if "font-weight: bold" in style:
+            text = f"**{text}**"
+        if "font-style: italic" in style:
+            text = f"_{text}_"
+        span.replace_with(text)
+    for a in tag.select("a[href]"):
+        a.replace_with(f"[{a.get_text()}]({a['href']})")
     return tag.get_text()
 
 
@@ -176,24 +212,24 @@ def process_codeblock(
     return "\n".join(lines)
 
 
-def build_examples_markdown(soup: BeautifulSoup) -> tuple[str, set[str]]:
+def build_readme_markdown(soup: BeautifulSoup) -> tuple[str, set[str]]:
     content = soup.select_one("div.rtcContent")
     out_lines = []
     fig_counter = [0]
     used_files: set[str] = set()
     heading_slug = ""
-    # the guide's h1 intro (title, `doc ...` list, author/citation) is
-    # already covered by the README's own header -- start after it, at the
-    # first h2.
+    # the live script's own title (h1) is already covered by the README's
+    # own header above -- skip emitting it, but still start capturing every
+    # paragraph/list/code block that follows it.
     started = False
     for child in content.children:
         if not isinstance(child, Tag):
             continue
         name = child.name
-        if name in ("h1", "h2", "h3"):
-            if name == "h1":
-                started = False
-                continue
+        if name == "h1":
+            started = True
+            continue
+        if name in ("h2", "h3"):
             started = True
             heading_slug = slugify(latexify(child).strip())
             out_lines.append(f"{HEADING_MARKDOWN[name]} {latexify(child).strip()}")
@@ -205,14 +241,19 @@ def build_examples_markdown(soup: BeautifulSoup) -> tuple[str, set[str]]:
         if "CodeBlock" in classes:
             out_lines.append(process_codeblock(child, heading_slug, fig_counter, used_files))
             out_lines.append("")
-        elif name == "div" and ("S1" in classes or "S5" in classes):
+        elif name == "div":
+            # Matlab's HTML export assigns each distinct paragraph style a
+            # per-document "Sn" class number, which shifts whenever content
+            # is added/removed elsewhere -- so match any non-CodeBlock div
+            # as a plain text paragraph, rather than specific Sn numbers.
             text = latexify(child).strip()
             if text:
                 out_lines.append(text)
                 out_lines.append("")
-        elif name == "ol":
-            for li in child.find_all("li"):
-                out_lines.append(f"- {latexify(li).strip()}")
+        elif name in ("ol", "ul"):
+            for i, li in enumerate(child.find_all("li"), start=1):
+                marker = f"{i}." if name == "ol" else "-"
+                out_lines.append(f"{marker} {latexify(li).strip()}")
             out_lines.append("")
         elif name == "br":
             continue
@@ -222,22 +263,8 @@ def build_examples_markdown(soup: BeautifulSoup) -> tuple[str, set[str]]:
     return "\n".join(out_lines).rstrip() + "\n", used_files
 
 
-def update_readme(examples_markdown: str) -> None:
-    readme = README_PATH.read_text(encoding="utf-8")
-    pattern = re.compile(re.escape(BEGIN_MARKER) + r".*?" + re.escape(END_MARKER), re.DOTALL)
-    if pattern.search(readme):
-        replacement = f"{BEGIN_MARKER}\n\n{examples_markdown}\n{END_MARKER}"
-        readme = pattern.sub(lambda _: replacement, readme)
-    else:
-        anchor = "The following are the worked examples from it.\n"
-        if anchor not in readme:
-            raise SystemExit(
-                "README.md is missing the anchor line to insert the generated block after:\n"
-                f"{anchor!r}"
-            )
-        block = f"\n{BEGIN_MARKER}\n\n{examples_markdown}\n{END_MARKER}\n"
-        readme = readme.replace(anchor, anchor + block, 1)
-    README_PATH.write_text(readme, encoding="utf-8")
+def write_readme(body_markdown: str) -> None:
+    README_PATH.write_text(README_HEADER + body_markdown, encoding="utf-8")
 
 
 def main() -> None:
@@ -248,8 +275,8 @@ def main() -> None:
         png.unlink()
 
     soup = BeautifulSoup(HTML_PATH.read_text(encoding="utf-8"), "html.parser")
-    examples_markdown, used_files = build_examples_markdown(soup)
-    update_readme(examples_markdown)
+    body_markdown, used_files = build_readme_markdown(soup)
+    write_readme(body_markdown)
     print(
         f"Updated {README_PATH.relative_to(REPO)} and {len(used_files)} "
         f"image(s) in {IMAGES_DIR.relative_to(REPO)}/"

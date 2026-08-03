@@ -1,10 +1,10 @@
 name: Sync getting-started docs from live script
 
-# Whenever the exported Getting Started HTML changes on main, copy its
-# current (already rendered) content into README.md and doc/getting-started/*.png,
-# and commit the result back to main. This does NOT run Matlab or execute
-# anything -- it only reflects whatever state you last exported, so this step
-# stays fast.
+# Whenever the exported Getting Started HTML changes on main, regenerate
+# README.md in full (except its fixed logo/badge header) and
+# doc/getting-started/*.png from that already-rendered content, and commit
+# the result back to main. This does NOT run Matlab or execute anything --
+# it only reflects whatever state you last exported, so this step stays fast.
 #
 # Pushes made with the default GITHUB_TOKEN don't trigger new workflow runs,
 # so the commit this job makes won't cause an infinite loop.

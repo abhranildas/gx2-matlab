@@ -1,86 +1,85 @@
+<!-- This file is generated in full from doc/GettingStarted.mlx (via its HTML export, doc/html/GettingStarted.html) -- do not edit by hand, other than the logo/badge line below; regenerate with `python scripts/build_getting_started.py` -->
+
 <p align="center">
   <img src="https://raw.githubusercontent.com/abhranildas/gx2-matlab/main/gx2_icon.png" alt="gx2" width="260">
 </p>
 
 # Generalized chi-square distribution [![View Generalized chi-square distribution on File Exchange](https://www.mathworks.com/matlabcentral/images/matlab-file-exchange.svg)](https://www.mathworks.com/matlabcentral/fileexchange/85028-generalized-chi-square-distribution)
-Matlab toolbox that computes the statistics, characteristic function, pdf, cdf, inverse cdf,
-random numbers, and exact gradients/Hessians of the cdf, of the **generalized chi-square distribution**. There is also a [python package](https://pypi.org/project/gx2/) version of this.
 
-A generalized chi-square variable is a weighted sum of independent non-central
-chi-square variables plus a normal variable — equivalently, the quadratic form
-of a normal random vector. It is parametrized by:
+**`gx2`** is a Matlab toolbox that computes the statistics, characteristic function, pdf, cdf, inverse cdf, random numbers, and exact gradients/Hessians of the cdf, of the generalized chi-square distribution. There is also a [python package](https://pypi.org/project/gx2/) version of this.
 
-| parameter | meaning |
-|-----------|---------|
-| `w`       | weights of the non-central chi-square terms |
-| `k`       | their degrees of freedom |
-| `l`       | their non-centralities |
-| `s`       | scale (standard deviation) of the added normal term |
-| `m`       | constant offset |
+A generalized chi-square variable is a weighted sum of independent non-central chi-square variables plus a normal variable — equivalently, the quadratic form of a normal random vector. It is parametrized by:
+
+- `w` — weights of the non-central chi-square terms
+- `k` — their degrees of freedom
+- `l` — their non-centralities
+- `s` — scale (standard deviation) of the added normal term
+- `m` — constant offset
 
 ## Author and citation
 
-Abhranil Das, Center for Perceptual Systems, The University of Texas at Austin.
-Bugs / comments / questions / suggestions to abhranil.das@utexas.edu.
+Abhranil Das
 
-If you use this code, please cite:
- - [A method to integrate and classify normal distributions](https://doi.org/10.1167/jov.21.10.1)
- - [New methods to compute the generalized chi-square distribution](https://www.tandfonline.com/doi/abs/10.1080/00949655.2025.2501401)
+Center for Perceptual Systems, University of Texas at Austin
+
+Comments, questions, bugs to [abhranil.das@utexas.edu](mailto:abhranil.das@utexas.edu)
+
+If you use this toolbox, please cite:
+
+1. [A method to integrate and classify normal distributions](https://doi.org/10.1167/jov.21.10.1)
+2. [New methods to compute the generalized chi-square distribution](https://www.tandfonline.com/doi/abs/10.1080/00949655.2025.2501401)
 
 ## Installation
+
 Within Matlab's Home tab, select Add-Ons > Get Add-Ons > Search for 'Generalized chi-square distribution' and install.
 
 ## Public functions
 
-| function | purpose |
-|----------|---------|
-| `gx2stat(w, k, l, s, m)` | mean and variance |
-| `gx2char(t, w, k, l, s, m)` | characteristic function |
-| `gx2rnd(w, k, l, s, m, sz, method=)` | random numbers |
-| `gx2cdf(x, w, k, l, s, m, side=, method=, ...)` | cdf |
-| `gx2pdf(x, w, k, l, s, m, side=, method=, ...)` | pdf |
-| `gx2inv(p, w, k, l, s, m, side=, method=, ...)` | inverse cdf |
-| `gx2_to_norm_quad_params(w, k, l, s, m)` | gx2 → quadratic-form coefficients of a standard normal |
-| `norm_quad_to_gx2_params(mu, v, quad, merge=)` | quadratic form of a normal → gx2 parameters |
-| `cdf_grad_gx2(x, w, k, l, s, m, wrt=, ...)` | exact gradient (and, as a 2nd output, Hessian) of the cdf wrt the native parameters `w, k, l, s, m` |
-| `cdf_grad_norm_quad(x, mu, v, quad, wrt=, ...)` | exact gradient (and, as a 2nd output, Hessian) of the cdf wrt the quadratic boundary coefficients `q2, q1, q0` |
+- `gx2stat(w, k, l, s, m)` — mean and variance
+- `gx2char(t, w, k, l, s, m)` — characteristic function
+- `gx2rnd(w, k, l, s, m, sz, method=)` — random numbers
+- `gx2cdf(x, w, k, l, s, m, side=, method=, ...)` — cdf
+- `gx2pdf(x, w, k, l, s, m, side=, method=, ...)` — pdf
+- `gx2inv(p, w, k, l, s, m, side=, method=, ...)` — inverse cdf
+- `gx2_to_norm_quad_params(w, k, l, s, m)` — gx2 → quadratic-form coefficients of a standard normal
+- `norm_quad_to_gx2_params(mu, v, quad, merge=)` — quadratic form of a normal → gx2 parameters
+- `cdf_grad_gx2(x, w, k, l, s, m, wrt=, ...)` — exact gradient (and, as a 2nd output, Hessian) of the cdf wrt the native parameters w, k, l, s, m
+- `cdf_grad_bd(x, mu, v, quad, wrt=, ...)` — exact gradient (and, as a 2nd output, Hessian) of the cdf wrt the quadratic boundary coefficients q2, q1, q0
 
 For full documentation of any function, type in Matlab, e.g.:
 
-    doc gx2_to_norm_quad_params
-    doc norm_quad_to_gx2_params
-    doc gx2stat
-    doc gx2rnd
-    doc gx2char
-    doc gx2cdf
-    doc gx2pdf
-    doc gx2inv
-    doc cdf_grad_gx2
-    doc cdf_grad_norm_quad
+```matlab
+doc gx2_to_norm_quad_params
+doc norm_quad_to_gx2_params
+doc gx2stat
+doc gx2rnd
+doc gx2char
+doc gx2cdf
+doc gx2pdf
+doc gx2inv
+doc cdf_grad_gx2
+doc cdf_grad_bd
+```
 
-## Computation methods for `cdf` / `pdf`
+## Computation methods for cdf and pdf
 
-`method='auto'` (default) picks a good method for the given parameters. You can
-also force one:
+`method='auto'` (default) picks a good method for the given parameters. You can also force one:
 
-| method | notes |
-|--------|-------|
-| `'imhof'`   | Imhof–Davies numerical integration (`precision='basic'` or `'vpa'`) |
-| `'ray'`     | ray-trace method (`precision='basic'`, `'log'` or `'vpa'`; tune with `n_rays`, `force_mc`) |
-| `'ifft'`    | inverse-FFT method; `x='full'` returns the cdf/pdf over a spanning grid |
-| `'ruben'`   | Ruben's series — requires all `w` the same sign and `s=0` |
-| `'tail'`    | infinite-tail approximation |
-| `'pearson'` | Pearson's 3-moment approximation |
-| `'ellipse'` | ellipse approximation near a finite tail — requires all `w` the same sign and `s=0` |
+- `'imhof'` — Imhof–Davies numerical integration (`precision='basic'` or `'vpa'`)
+- `'ray'` — ray-trace method (`precision='basic'`, `'log'` or `'vpa'`; tune with `n_rays`, `force_mc`)
+- `'ifft'` — inverse-FFT method; `x='full'` returns the cdf/pdf over a spanning grid
+- `'ruben'` — Ruben's series — requires all `w` the same sign and `s=0`
+- `'tail'` — infinite-tail approximation
+- `'pearson'` — Pearson's 3-moment approximation
+- `'ellipse'` — ellipse approximation near a finite tail — requires all `w` the same sign and `s=0`
 
-## Examples
-After installation, begin with the Getting Started live script with interactive examples, or, at any time, go to Matlab Home tab > Add-Ons > Manage Add-Ons > click the three dots next to this toolbox > View Getting Started Guide.
+## `Examples`
 
-The following are the worked examples from it.
+After installation, begin with the **Getting Started** live script with interactive examples, or, at any time, go to Matlab Home tab > Add-Ons > Manage Add-Ons > click the three dots next to this toolbox > View Getting Started Guide.
 
-<!-- BEGIN GENERATED: getting-started (do not edit by hand; regenerate with `python scripts/build_getting_started.py`) -->
+The following are the worked examples of the Getting Started guide.
 
-### Calculate mean, variance, mode
+## Calculate mean, variance, mode
 
 ```matlab
 % gx2 parameters
@@ -89,7 +88,7 @@ k=[1 2 3];
 l=[2 3 7];
 s=5;
 m=10;
-
+ 
 [mu,v,mode]=gx2stat(w,k,l,s,m)
 ```
 ```
@@ -103,7 +102,7 @@ mode =
 9.2975
 ```
 
-### Generate random samples
+## Generate random samples
 
 ```matlab
 r=gx2rnd(w,k,l,s,m,[1 1e5]);
@@ -113,7 +112,7 @@ xline(mode,'-',{'expected mode'},'labelorientation','aligned')
 ```
 ![Plot output 1](https://raw.githubusercontent.com/abhranildas/gx2-matlab/main/doc/getting-started/generate-random-samples-1.png)
 
-### Compute PDF, CDF and inverse CDF with default methods
+## Compute PDF, CDF and inverse CDF with default methods
 
 ```matlab
 x=[10 25];
@@ -176,7 +175,7 @@ p =
 % compute the PDF over most of the span of the distribution.
 % with the 'full' argument, the span x is computed automatically.
 [f,~,x]=gx2pdf('full',w,k,l,s,m);
-
+ 
 % now compare the sampled histogram with the computed PDF
 figure; hold on
 plot(x,f)
@@ -190,7 +189,7 @@ xlim([-250 100])
 % the 'full' argument uses the IFFT method, good for quick rough plots,
 % but less accurate (esp. for CDF) than some other methods
 [p,~,x]=gx2cdf('full',w,k,l,s,m);
-
+ 
 % now compare the sampled histogram with the computed CDF
 figure; hold on
 plot(x,p)
@@ -202,9 +201,9 @@ xlim([-200 100])
 ```
 ![compute CDF over most of the span of the distribution.](https://raw.githubusercontent.com/abhranildas/gx2-matlab/main/doc/getting-started/compute-pdf-cdf-and-inverse-cdf-with-default-methods-3.png)
 
-### Compute CDF, PDF and inverse CDF with each exact method and its settings
+## Compute CDF, PDF and inverse CDF with each exact method and its settings
 
-#### A non-elliptic distribution
+### A non-elliptic distribution
 
 ```matlab
 w=[-2 -5 2];
@@ -212,7 +211,7 @@ k=[2 1 3];
 l=[0 4 4];
 s=3;
 m=-20;
-
+ 
 % first find the quantile points at 0.1% in each tail
 x_bounds=gx2inv([0.001 0.999],w,k,l,s,m)
 ```
@@ -223,7 +222,7 @@ x_bounds =
 ```matlab
 % now compute within this range
 x=linspace(x_bounds(1),x_bounds(2),50);
-
+ 
 % compute CDF
 p_ifft=gx2cdf(x,w,k,l,s,m,'method','ifft');
 p_imhof=gx2cdf(x,w,k,l,s,m,'method','imhof');
@@ -240,7 +239,7 @@ legend('IFFT','Imhof','ray')
 f_ifft=gx2pdf(x,w,k,l,s,m,'method','ifft');
 f_imhof=gx2pdf(x,w,k,l,s,m,'method','imhof');
 f_ray=gx2pdf(x,w,k,l,s,m,'method','ray','n_rays',1e6);
-
+ 
 figure; hold on
 plot(x,f_ifft,'-k')
 plot(x,f_imhof,'.b')
@@ -294,7 +293,7 @@ p =
    -1.0021   -2.0048
 ```
 
-#### An elliptic distribution
+### An elliptic distribution
 
 Here we can use Ruben's method too.
 
@@ -304,7 +303,7 @@ k=[1 2 3];
 l=[2 3 7];
 s=0;
 m=-100;
-
+ 
 % first find the quantile points at 0.1% in each tail
 x_bounds=gx2inv([0.001 0.999],w,k,l,s,m)
 ```
@@ -315,13 +314,13 @@ x_bounds =
 ```matlab
 % now compute within this range
 x=linspace(x_bounds(1),x_bounds(2),50);
-
+ 
 % compute CDF
 p_ifft=gx2cdf(x,w,k,l,s,m,'method','ifft');
 p_imhof=gx2cdf(x,w,k,l,s,m,'method','imhof');
 p_ray=gx2cdf(x,w,k,l,s,m,'method','ray','n_rays',1e4);
 p_ruben=gx2cdf(x,w,k,l,s,m,'method','ruben');
-
+ 
 figure; hold on
 plot(x,p_ifft,'-k')
 plot(x,p_imhof,'.b')
@@ -336,7 +335,7 @@ f_ifft=gx2pdf(x,w,k,l,s,m,'method','ifft');
 f_imhof=gx2pdf(x,w,k,l,s,m,'method','imhof');
 f_ray=gx2pdf(x,w,k,l,s,m,'method','ray','n_rays',1e6);
 f_ruben=gx2pdf(x,w,k,l,s,m,'method','ruben');
-
+ 
 figure; hold on
 plot(x,f_ifft,'-k')
 plot(x,f_imhof,'.b')
@@ -358,7 +357,7 @@ x_q =
 ```
 ```matlab
 % this means that the computed quantiles are 1e-331 and 1e-664 above m
-
+ 
 % now verify using the forward cdf method that cdf values here are indeed 1e-1000 and 1e-2000:
 p=gx2cdf(x_q,w,k,l,s,m,'method','ellipse','x_scale','log')
 ```
@@ -368,11 +367,11 @@ p =
    -1.0000   -2.0000
 ```
 
-### Compute CDF and PDF in the far tails, using some tail approximation methods too
+## Compute CDF and PDF in the far tails, using some tail approximation methods too
 
 Ray, tail and Imhof methods are best for infinite tails.
 
-#### Compute CDF in an infinite lower tail
+### Compute CDF in an infinite lower tail
 
 ```matlab
 w=[1 2 -3 -4];
@@ -380,9 +379,9 @@ k=[6 5 4 3];
 l=[5 10 0 0];
 s=10;
 m=-50;
-
+ 
 x=linspace(-500,200,40);
-
+ 
 p_ifft=gx2cdf(x,w,k,l,s,m,'method','ifft','span',1e7,'n_grid',1e7);
 p_imhof=gx2cdf(x,w,k,l,s,m,'method','imhof','abstol',0,'reltol',1e-10);
 ```
@@ -392,33 +391,33 @@ Warning: Imhof method output(s) too close to limit to compute exactly, so clippi
 ```matlab
 p_ray=gx2cdf(x,w,k,l,s,m,'method','ray','n_rays',1e6);
 p_pearson=gx2cdf(x,w,k,l,s,m,'method','pearson'); % pearson sucks
-
+ 
 % tail approximation for lower tail. Mentioning 'lower' is needed here.
 % For output values that are too small for double precision, it returns
 % their log10 values, which are negative.
 p_tail=gx2cdf(x,w,k,l,s,m,'lower','method','tail');
 % convert all output values to their log10
 p_tail(p_tail>0)=log10(p_tail(p_tail>0));
-
+ 
 figure; hold on
 plot(x,log10(p_ifft),'-k')
 plot(x,log10(p_ray),'or')
 plot(x,p_tail,'-g')
 plot(x,log10(p_pearson),'.c','MarkerSize',15)
 plot(x,log10(p_imhof),'.b')
-
+ 
 axis([-5e2 200 -30 0])
-
+ 
 legend('IFFT','ray','tail', 'pearson','Imhof')
 ylabel('$\log_{10} p$','Interpreter','latex')
 ```
 ![tail approximation for lower tail. Mentioning 'lower' is needed here.](https://raw.githubusercontent.com/abhranildas/gx2-matlab/main/doc/getting-started/compute-cdf-in-an-infinite-lower-tail-8.png)
 
-#### Compute PDF in an infinite upper tail
+### Compute PDF in an infinite upper tail
 
 ```matlab
 x=linspace(0,500,40);
-
+ 
 f_ifft=gx2pdf(x,w,k,l,s,m,'method','ifft','span',1e7,'n_grid',1e7);
 f_imhof=gx2pdf(x,w,k,l,s,m,'method','imhof','abstol',0,'reltol',1e-1);
 ```
@@ -428,25 +427,25 @@ Warning: Imhof method output(s) too close to limit to compute exactly, so clippi
 ```matlab
 f_ray=gx2pdf(x,w,k,l,s,m,'method','ray','n_rays',1e6);
 f_pearson=gx2pdf(x,w,k,l,s,m,'method','pearson');
-
+ 
 % tail approximation for upper tail. Mentioning 'upper' is needed here.
 f_tail=gx2pdf(x,w,k,l,s,m,'upper','method','tail');
-
+ 
 figure; hold on
 plot(x,log10(f_ifft),'-k')
 plot(x,log10(f_ray),'or')
 plot(x,log10(f_tail),'-g')
 plot(x,log10(f_pearson),'.c','MarkerSize',15)
 plot(x,log10(f_imhof),'.b')
-
+ 
 axis([0 500 -30 0])
-
+ 
 legend('IFFT','ray','tail', 'pearson','Imhof')
 ylabel('$\log_{10} f$','Interpreter','latex')
 ```
 ![tail approximation for upper tail. Mentioning 'upper' is needed here.](https://raw.githubusercontent.com/abhranildas/gx2-matlab/main/doc/getting-started/compute-pdf-in-an-infinite-upper-tail-9.png)
 
-#### Compute CDF in a finite lower tail
+### Compute CDF in a finite lower tail
 
 Ruben and ellipse methods are best for finite tails.
 
@@ -456,9 +455,9 @@ k=[6 5 4 3];
 l=[5 10 0 0];
 s=0;
 m=0;
-
+ 
 x=logspace(-2,2,40);
-
+ 
 p_ifft=gx2cdf(x,w,k,l,s,m,'method','ifft','span',1e7,'n_grid',1e7);
 p_imhof=gx2cdf(x,w,k,l,s,m,'method','imhof','abstol',0,'reltol',1e-10);
 ```
@@ -470,7 +469,7 @@ p_ruben=gx2cdf(x,w,k,l,s,m,'method','ruben');
 p_ray=gx2cdf(x,w,k,l,s,m,'method','ray','n_rays',1e5);
 p_pearson=gx2cdf(x,w,k,l,s,m,'method','pearson');
 p_ellipse=gx2cdf(x,w,k,l,s,m,'method','ellipse');
-
+ 
 figure; hold on
 plot(x,log10(p_ifft),'-k')
 plot(x,log10(p_ray),'or','MarkerSize',8)
@@ -478,14 +477,14 @@ plot(x,log10(p_ellipse),'-g')
 plot(x,log10(p_pearson),'.c','MarkerSize',15)
 plot(x,log10(p_imhof),'.b')
 plot(x,log10(p_ruben),'om','MarkerSize',4)
-
+ 
 set(gca,'xscale','log')
 legend('IFFT','ray','ellipse', 'pearson','Imhof','Ruben','Location', 'southeast')
 ylabel('$\log_{10} p$','Interpreter','latex')
 ```
 ![Plot output 10](https://raw.githubusercontent.com/abhranildas/gx2-matlab/main/doc/getting-started/compute-cdf-in-a-finite-lower-tail-10.png)
 
-### Distribution of quadratic form of a normal variable
+## Distribution of quadratic form of a normal variable
 
 Normal parameters:
 
@@ -502,7 +501,7 @@ figure; plot(x(1,:),x(2,:),'.')
 ```
 ![Plot output 11](https://raw.githubusercontent.com/abhranildas/gx2-matlab/main/doc/getting-started/distribution-of-quadratic-form-of-a-normal-variable-11.png)
 
-Quadratic form $q(\mathbf{x})=(x_1+x_2)^2-x_1-1$ = [x1;x2]'*[1 1; 1 1]*[x1;x2] + [-1;0]'*[x1;x2] -1
+Quadratic form $q(\mathbf{x})=(x_1+x_2)^2-x_1-1$` = [x1;x2]'*[1 1; 1 1]*[x1;x2] + [-1;0]'*[x1;x2] -1`
 
 ```matlab
 quad.q2=[1 1; 1 1];
@@ -510,13 +509,13 @@ quad.q1=[-1;0];
 quad.q0=-1;
 ```
 
-Compute the quadratic form q for the sample of normal vectors:
+Compute the quadratic form _q_ for the sample of normal vectors:
 
 ```matlab
 q=dot(x,quad.q2*x)+quad.q1'*x+quad.q0;
 ```
 
-Get generalized chi-square parameters corresponding to this quadratic form:
+**Get generalized chi-square parameters corresponding to this quadratic form:**
 
 ```matlab
 [w,k,l,s,m]=norm_quad_to_gx2_params(mu,v,quad)
@@ -528,7 +527,7 @@ w =
 k =
 1
 
-l =
+lambda =
 16.6188
 
 s =
@@ -538,7 +537,7 @@ m =
 -1.3316
 ```
 
-Compare the sampled and calculated distributions of q:
+Compare the sampled and calculated distributions of _q_:
 
 ```matlab
 [f,~,x]=gx2pdf('full',w,k,l,s,m);
@@ -597,7 +596,7 @@ struct with fields:
     q0: 115
 ```
 
-### Compute characteristic function
+## Compute characteristic function
 
 ```matlab
 t=linspace(-1,1,1e3);
@@ -606,11 +605,11 @@ figure; plot(phi,'-o')
 ```
 ![Plot output 13](https://raw.githubusercontent.com/abhranildas/gx2-matlab/main/doc/getting-started/compute-characteristic-function-13.png)
 
-### 1st & 2nd derivatives (gradient & Hessian) of CDF wrt distribution parameters
+## 1st & 2nd derivatives (gradient & Hessian) of CDF wrt distribution parameters
 
 This uses first and second derivatives computed analytically (faster and more accurate), than finite-differencing the cdf, which is slower and noisier.
 
-#### Gradient and Hessian wrt the 'native' parameters
+### Gradient and Hessian wrt the 'native' parameters
 
 Take a generalized chi-square and a point $x_0$, and ask how the cdf $F(x_0)$ changes as we nudge the distribution parameters.
 
@@ -653,9 +652,9 @@ hess =
     0.0004    0.0002    0.0008    0.0002   -0.0007    0.0003    0.0002   -0.0005    0.0002    0.0000    0.0002
 ```
 
-#### Taylor picture: vary one native parameter and predict the cdf
+### Taylor picture: vary one native parameter and predict the cdf
 
-We compute derivatives only wrt λ, then use the first and second derivative of $\lambda_1$ to build the second-order Taylor model of $F(x_0)$ as $\lambda_1$ moves.
+We compute derivatives only wrt _λ_, then use the first and second derivative of $\lambda_1$ to build the second-order Taylor model of $F(x_0)$ as $\lambda_1$ moves.
 
 $F(x_0),$ $\frac{\partial F(x_0)}{\partial \lambda_1}$ and $\frac{\partial^2 F(x_0)}{\partial \lambda_1^2}$:
 
@@ -685,7 +684,7 @@ title('cdf sensitivity to a non-centrality \lambda_1');
 ```
 ![Plot output 14](https://raw.githubusercontent.com/abhranildas/gx2-matlab/main/doc/getting-started/taylor-picture-vary-one-native-parameter-and-predict-the-cdf-14.png)
 
-#### Gradient and Hessian wrt the parameters of the quadratic boundary
+### Gradient and Hessian wrt the parameters of the quadratic boundary
 
 ```matlab
 mu=[1;2]; v=[2 1; 1 3];
@@ -715,11 +714,11 @@ fprintf('dF/dq0: %.4f\n',grad.q0);
 dF/dq0: -0.0962
 ```
 
-#### Taylor picture: vary one boundary parameter and predict the cdf
+### Taylor picture: vary one boundary parameter and predict the cdf
 
 We compute the second-order Taylor approximation of $F(x_0)$ wrt variations in $\mathbf{Q}_{11}$.
 
-$F(x_0),$ $\frac{\partial F(x_0)}{\partial Q_{11}}$ and $\frac{\partial^2 F(x_0)}{\partial \mathbf{Q}_{11}^2}$:
+$F(x_0),$ $\frac{\partial F(x_0)}{\partial \mathbf{Q}_{11}}$ and $\frac{\partial^2 F(x_0)}{\partial \mathbf{Q}_{11}^2}$:
 
 ```matlab
 [w2,k2,l2,s2,m2]=norm_quad_to_gx2_params(mu,v,quad);
@@ -750,4 +749,6 @@ function p=probq(mu,v,quad,d,x0)
 end
 ```
 
-<!-- END GENERATED: getting-started -->
+## More classification-related functionality
+
+Additional functionality related to binary Gaussian classification models, that you may find in the corresponding [gx2-py python package](https://pypi.org/project/gx2/) (such as computing the optimal classification boundary between two Gaussians, and the gradient and Hessian of the classification error with respect to it), are in the Matlab toolbox ['Integrate and Classify Normal Distributions'](https://www.mathworks.com/matlabcentral/fileexchange/84973-integrate-and-classify-normal-distributions), specialized for Gaussian classification applications.

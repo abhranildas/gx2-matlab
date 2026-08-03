@@ -30,7 +30,9 @@ function [p,p_err]=gx2_ruben(x,w,k,l,m,varargin)
 % Optional positional/name-value inputs:
 % side      'lower' (default) or 'upper'
 % output    'cdf' (default) or 'pdf'
-% n_ruben   cap on the number of series terms. Default=1e3.
+% n_ruben   cap on the number of series terms. Default=1e3. See
+%           gx2_ruben_coeffs for what happens if the series doesn't converge
+%           within this many terms.
 % nx        x-derivative order (pdf output only). Default=0.
 %
 % Outputs:
