@@ -73,7 +73,7 @@ doc cdf_grad_bd
 - `'pearson'` — Pearson's 3-moment approximation
 - `'ellipse'` — ellipse approximation near a finite tail — requires all `w` the same sign and `s=0`
 
-## `Examples`
+## Examples
 
 After installation, begin with the **Getting Started** live script with interactive examples, or, at any time, go to Matlab Home tab > Add-Ons > Manage Add-Ons > click the three dots next to this toolbox > View Getting Started Guide.
 
