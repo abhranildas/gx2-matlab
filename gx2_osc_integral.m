@@ -21,8 +21,9 @@ function [I,failed]=gx2_osc_integral(H,c,AbsTol,RelTol)
 % integrand's mass, so a plain quadrature usually works and is more
 % accurate, and is tried first. Otherwise, or if it fails, the integral is
 % split (see fourier_split below) into a head integrated plainly and a tail
-% integrated cycle by cycle, with the partial sums extrapolated by Wynn's
-% epsilon algorithm, as QUADPACK's Fourier-integral routine QAWF does.
+% integrated cycle by cycle, with the partial sums extrapolated by Sidi's
+% modified W-transformation, which converges to the Abel value even where
+% the integrand does not decay (gx2_derivatives.md, section 1.4).
 
 % Abhranil Das
 % Center for Perceptual Systems, University of Texas at Austin
@@ -66,10 +67,10 @@ function [I,failed,converged]=fourier_split(H,c,AbsTol,RelTol)
 % the shared quadratures did not.
 %
 % With c~=0 the integrand oscillates with period 2*pi/|c|. We integrate a
-% head (0,v0) plainly, and the tail the way QUADPACK's QAWF does (MATLAB has
-% no built-in equivalent): over successive cycles, each an odd number of
-% half-periods long so that the cycle integrals alternate in sign, then
-% extrapolate their partial sums with Wynn's epsilon algorithm. As in QAWF,
+% head (0,v0) plainly, and the tail over successive cycles, each an odd
+% number of half-periods long so that the cycle integrals alternate in sign,
+% then extrapolate their partial sums with Sidi's modified W-transformation
+% (see mw_transform below). As in QUADPACK's Fourier-integral routine QAWF,
 % a cycle is (2*floor(|c|)+1) half-periods, i.e. about 2*pi long for
 % |c|>=1, and 50 cycles are used. The head is one period, but no longer than
 % 2*pi, so that it covers the integrand's mass even for small c. The heads
@@ -89,35 +90,40 @@ cycle=@(t) real(reshape(H(reshape(starts+t*L,1,[])),P,n_cycles,nc) ...
 converged=head_ok && cycles_ok;
 I=nan(P,nc); failed=false(1,nc);
 for i=1:nc
-    for p=1:P
-        [tail,err]=wynn_epsilon(cumsum(cycle_integrals(p,:,i)));
-        I(p,i)=head(p,i)+tail;
-        failed(i)=failed(i) || err>max(AbsTol,RelTol*abs(I(p,i)));
-    end
-    failed(i)=failed(i) || ~converged;
+    S=[zeros(1,P); cumsum(reshape(cycle_integrals(:,:,i),P,n_cycles).',1)];  % (n_cycles+1)-by-P
+    [tail,err]=mw_transform(S,v0(i)+L(i)*(0:n_cycles)');
+    I(:,i)=head(:,i)+tail.';
+    failed(i)=~converged || any(err>max(AbsTol,RelTol*abs(I(:,i).')));
 end
 end
 
-function [val,err]=wynn_epsilon(S)
-% Wynn's epsilon algorithm: the extrapolated limit of the sequence of
-% partial sums S, and an error estimate. Each even column of the epsilon
-% table is a sequence of estimates of the limit; we return the last entry of
-% the even column that changed least from the previous even column.
-n=numel(S);
-val=S(end);
-err=abs(S(end)-S(max(end-1,1)));
-prev=zeros(1,n+1);         % column -1
-cur=S(:)';                 % column 0
-last_even=cur(end);
-for col=1:n-1
-    nxt=prev(2:numel(cur))+1./diff(cur);
-    if ~all(isfinite(nxt)), break, end % sequence already converged exactly
-    prev=cur; cur=nxt;
-    if mod(col,2)==0
-        e=abs(cur(end)-last_even);
-        if e<err, val=cur(end); err=e; end
-        last_even=cur(end);
-    end
+function [val,err]=mw_transform(S,x)
+% Sidi's modified W-transformation (Math. Comp. 51, 1988, eqs. 1.9,
+% 1.12-1.13 and 2.1) on the partial integrals S(l,:) up to the points x(l),
+% one column per entry. The cycle integrals psi(l,:)=S(l+1,:)-S(l,:) serve
+% as the remainder estimates, and the W-algorithm builds the approximations
+% W_p^(0), p=0,1,...; we return the one that changed least from its
+% predecessor, and that change as an error estimate. Its convergence to the
+% (Abel) value is proven for the integrands of gx2_derivatives.md, section
+% 1.4. Same as _mw_transform in the Python port.
+psi=diff(S,1,1);
+n=size(psi,1);
+xi=1./x(1:n);
+M=S(1:n,:)./psi;
+N=1./psi;
+val=S(end,:);
+err=abs(psi(end,:));
+W_prev=M(1,:)./N(1,:);
+for p=0:n-2
+    d=xi(1:n-p-1)-xi(p+2:n);
+    M=(M(1:end-1,:)-M(2:end,:))./d;
+    N=(N(1:end-1,:)-N(2:end,:))./d;
+    W=M(1,:)./N(1,:);
+    change=abs(W-W_prev);
+    better=isfinite(change) & change<err;
+    val(better)=W(better);
+    err(better)=change(better);
+    W_prev=W;
 end
 end
 

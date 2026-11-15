@@ -14,8 +14,8 @@ function [p,errflag]=gx2_imhof(x,w,k,l,s,m,varargin)
 % or if that fails, split into a
 % head over the first period (capped at 2*pi/sd in u), integrated plainly,
 % and a tail integrated cycle by cycle with the partial sums extrapolated by
-% Wynn's epsilon algorithm, as QUADPACK's Fourier-integral routine QAWF does
-% (see gx2_osc_integral); this is vectorized over all x points. All
+% Sidi's modified W-transformation (see gx2_osc_integral); this is
+% vectorized over all x points. All
 % quadratures run in the dimensionless variable sd*u, so results do not
 % depend on the units of x.
 %
