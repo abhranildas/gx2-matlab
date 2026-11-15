@@ -9,7 +9,9 @@ function [p,errflag]=gx2_imhof(x,w,k,l,s,m,varargin)
 % quadrature over (0,inf) cannot always handle. With 'precision' 'basic',
 % several x points are first integrated together in one shared plain
 % quadrature over (0,inf), which is fast and handles most cases. If that does
-% not converge, or there is only one point, the integral is split into a
+% not converge, or there is only one point, each point is integrated
+% separately: within 2 sd of m with a plain quadrature first, and otherwise,
+% or if that fails, split into a
 % head over the first period (capped at 2*pi/sd in u), integrated plainly,
 % and a tail integrated cycle by cycle with the partial sums extrapolated by
 % Wynn's epsilon algorithm, as QUADPACK's Fourier-integral routine QAWF does
@@ -80,20 +82,26 @@ if strcmpi(parser.Results.precision,'basic')
     end
     if ~converged
         imhof_integral=nan(size(cs));
-        osc=cs~=0;
-        % all oscillating points together; if the shared quadratures do not
+        % within 2 sd of m (|c|<=1) the oscillation is slow over the
+        % integrand's mass, so a plain quadrature over (0,inf) usually works
+        % and is more accurate (and at tiny c the cycles of fourier_split
+        % become absurdly long); try it first, and split only where it fails
+        split=abs(cs)>1;
+        for i=find(~split)
+            [imhof_integral(i),converged]=quiet_integral(@(v) real(H(v).*exp(-1i*cs(i)*v)),0,inf,AbsTol,RelTol);
+            failed(i)=~converged;
+            split(i)=~converged && cs(i)~=0;
+        end
+        % all points to split together; if the shared quadratures do not
         % converge, redo them one at a time so that only the points that
         % truly fail are flagged
-        [imhof_integral(osc),failed(osc),converged]=fourier_split(H,cs(osc),AbsTol,RelTol);
-        if ~converged && nnz(osc)>1
-            for i=find(osc)
-                [imhof_integral(i),failed(i)]=fourier_split(H,cs(i),AbsTol,RelTol);
+        if any(split)
+            [imhof_integral(split),failed(split),converged]=fourier_split(H,cs(split),AbsTol,RelTol);
+            if ~converged && nnz(split)>1
+                for i=find(split)
+                    [imhof_integral(i),failed(i)]=fourier_split(H,cs(i),AbsTol,RelTol);
+                end
             end
-        end
-        % x=m: no oscillation, so a plain quadrature
-        for i=find(~osc)
-            [imhof_integral(i),converged]=quiet_integral(@(v) real(H(v)),0,inf,AbsTol,RelTol);
-            failed(i)=~converged;
         end
     end
     if any(failed)
