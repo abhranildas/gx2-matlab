@@ -58,7 +58,9 @@ function [p,p_err,x_grid]=gx2cdf(x,w,k,l,s,m,varargin)
 % AbsTol    absolute error tolerance for the output. Default=1e-10.
 % RelTol    relative error tolerance for the output. Default=1e-6.
 %           AbsTol and RelTol are used only for Imhof's method, and ray method with grid integration.
-%           The absolute OR the relative tolerance is satisfied.
+%           The absolute OR the relative tolerance is satisfied. For Imhof's method they apply
+%           to its integral (of order pi/2 for the cdf), not to p, so for small tail
+%           probabilities tighten them (e.g. 'AbsTol',1e-14,'RelTol',1e-12).
 %
 % Options for ray method:
 % force_mc  true to force Monte-Carlo instead of grid integration over
@@ -87,8 +89,9 @@ function [p,p_err,x_grid]=gx2cdf(x,w,k,l,s,m,varargin)
 %           (if ellipse method with 'log' x_scale) log10 of p
 % p_err     (if ray method with Monte-Carlo integration) standard error of the output p
 %           (if Ruben's method) upper error bound of the output p
-%           (if Imhof's method) logical array, true for outputs too close to 0 or 1 to compute exactly with
-%           default settings. Try stricter tolerances.
+%           (if Imhof's method) logical array, true for unreliable outputs: either the
+%           integration did not reach the requested accuracy, or the output fell outside [0,1]
+%           and was clipped. Try stricter tolerances, or another method.
 %           (if ellipse method) relative error of p
 %           (if ellipse method with 'log' x_scale) log10 of relative error of p
 % x_grid    if input x is 'full', this returns the x points at which p is returned

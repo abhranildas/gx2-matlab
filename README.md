@@ -65,7 +65,7 @@ doc cdf_grad_bd
 
 `method='auto'` (default) picks a good method for the given parameters. You can also force one:
 
-- `'imhof'` — Imhof–Davies numerical integration (`precision='basic'` or `'vpa'`)
+- `'imhof'` — Imhof–Davies numerical integration (`precision='basic'` or `'vpa'`); the oscillatory tail of the integral is integrated cycle by cycle, with the cycle sums extrapolated. `AbsTol`/`RelTol` apply to the integral (~π/2 for the cdf), so tighten them for small tail probabilities. The `p_err` output flags points that did not converge or were clipped
 - `'ray'` — ray-trace method (`precision='basic'`, `'log'` or `'vpa'`; tune with `n_rays`, `force_mc`)
 - `'ifft'` — inverse-FFT method; `x='full'` returns the cdf/pdf over a spanning grid
 - `'ruben'` — Ruben's series — requires all `w` the same sign and `s=0`

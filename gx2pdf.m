@@ -61,7 +61,9 @@ function [f,f_err,xgrid]=gx2pdf(x,w,k,l,s,m,varargin)
 % AbsTol    absolute error tolerance for the output. Default=1e-10.
 % RelTol    relative error tolerance for the output. Default=1e-6.
 %           AbsTol and RelTol are used only for Imhof's method, and ray method with grid integration.
-%           The absolute OR the relative tolerance is satisfied.
+%           The absolute OR the relative tolerance is satisfied. For Imhof's method they apply
+%           to its integral (of order pi/2 for the cdf), not to p, so for small tail
+%           probabilities tighten them (e.g. 'AbsTol',1e-14,'RelTol',1e-12).
 %
 % Options for ray method:
 % force_mc  true to force Monte-Carlo instead of grid integration over
@@ -89,8 +91,9 @@ function [f,f_err,xgrid]=gx2pdf(x,w,k,l,s,m,varargin)
 %           (if tail method) cdf for lower tail, ccdf for upper tail. log10 of f for values < realmin.
 % f_err     (if ray method with Monte-Carlo integration) standard error of the output f
 %           (if Ruben's method) upper error bound of the output f
-%           (if Imhof's method) logical array, true for outputs too close to 0 or 1 to compute exactly with
-%           default settings. Try stricter tolerances.
+%           (if Imhof's method) logical array, true for unreliable outputs: either the
+%           integration did not reach the requested accuracy, or the output was negative and
+%           clipped. Try stricter tolerances, or another method.
 %           (if ellipse method) relative error of f
 %           (if ellipse method with 'log' x_scale) log10 of relative error of f
 % x_grid    if input x is 'full', this returns the x points at which f is returned
@@ -134,10 +137,10 @@ if ~diff_flag
         elseif sum(abs(w))==0 && s % only normal term
             f=normpdf(x,m,s);
         else
-            f=gx2_imhof(x,w,k,l,s,m,varargin{:},'output','pdf');
+            [f,f_err]=gx2_imhof(x,w,k,l,s,m,varargin{:},'output','pdf');
         end
     elseif strcmpi(method,'imhof')
-        f=gx2_imhof(x,w,k,l,s,m,varargin{:},'output','pdf');
+        [f,f_err]=gx2_imhof(x,w,k,l,s,m,varargin{:},'output','pdf');
     elseif strcmpi(method,'ruben')
         gx2_check_method(method,w,s);
         f=gx2_ruben(x,w,k,l,m,varargin{:},'output','pdf');

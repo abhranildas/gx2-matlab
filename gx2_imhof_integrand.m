@@ -15,28 +15,13 @@ function f=gx2_imhof_integrand(u,x,w,k,l,s,m,output,idx,nx)
 % The derivative modes use the complex integrand Z=exp(i*theta)/rho together
 % with the rule (R2) that each x-derivative multiplies Z by -(i*u/2), and that
 % d/dk_j brings down the factor ell_j=-1/2*log(1-i*w_j*u).
+%
+% Every mode is real(H(u).*exp(-1i*c*u)) with c=(x-m)/2 and the
+% x-independent amplitude H from gx2_imhof_amplitude.
 
 if nargin<9, idx=[]; end
 if nargin<10 || isempty(nx), nx=0; end
 
-theta=sum(k.*atan(w*u)+(l.*(w*u))./(1+w.^2*u.^2),1)/2+u*(m-x)/2;
-rho=prod(((1+w.^2*u.^2).^(k/4)).*exp(((w.^2*u.^2).*l)./(2*(1+w.^2*u.^2))),1) .* exp(u.^2*s^2/8);
-
-if strcmpi(output,'cdf')
-    f=sin(theta)./(u.*rho);
-elseif strcmpi(output,'pdf')
-    f=cos(theta)./rho;
-else
-    Z=exp(1i*theta)./rho;          % phi(t)*exp(-i*t*x), with u=2t
-    dx=(-(1i*u/2)).^nx;            % nx x-derivatives (R2)
-    if strcmpi(output,'dens')
-        f=real(dx.*Z);
-    elseif strcmpi(output,'k_deriv')
-        ell=-0.5*log(1-1i*w(idx)*u);
-        f=-imag(ell.*dx.*Z)./u;
-    elseif strcmpi(output,'kk_deriv')
-        ell=-0.5*log(1-1i*w(idx(1))*u).*(-0.5*log(1-1i*w(idx(2))*u));
-        f=-imag(ell.*dx.*Z)./u;
-    end
-end
+H=gx2_imhof_amplitude(u,w,k,l,s,output,idx,nx);
+f=real(H.*exp(-1i*u.*(x-m)/2));
 end

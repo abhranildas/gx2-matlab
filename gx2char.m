@@ -18,7 +18,10 @@ function phi=gx2char(t,w,k,l,s,m)
     % phi=gx2char(linspace(-10,10,100),[1 -5 2],[1 2 3],[2 3 7],0,5)
     %
     % Required inputs:
-    % t         array of points at which to compute the characteristic function
+    % t         array of points at which to compute the characteristic function.
+    %           May be complex (e.g. for Cauchy-integral moment formulas or
+    %           contour-shifted Fourier integrals) -- the underlying formula
+    %           is analytic in t.
     % w         row vector of weights of the non-central chi-squares
     % k         row vector of degrees of freedom of the non-central chi-squares
     % l         row vector of non-centrality paramaters (sum of squares of
