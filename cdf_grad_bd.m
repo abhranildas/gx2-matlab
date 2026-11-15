@@ -20,7 +20,7 @@ function [grad,hess]=cdf_grad_bd(x,mu,v,quad,varargin)
 % Usage:
 % grad=cdf_grad_bd(x,mu,v,quad)
 % grad=cdf_grad_bd(x,mu,v,quad,'wrt',{'q2','q0'})
-% grad=cdf_grad_bd(x,mu,v,quad,'AbsTol',0,'RelTol',1e-7,'precision','vpa')
+% grad=cdf_grad_bd(x,mu,v,quad,'AbsTol',0,'RelTol',1e-7)
 %
 % Example:
 % mu=[1;2]; v=[2 1; 1 3];
@@ -42,10 +42,7 @@ function [grad,hess]=cdf_grad_bd(x,mu,v,quad,varargin)
 % AbsTol    absolute error tolerance for the underlying integrals. Default=1e-10.
 % RelTol    relative error tolerance for the underlying integrals. Default=1e-6.
 %           The absolute OR the relative tolerance is satisfied.
-% precision 'basic' (default) uses double precision, 'vpa' uses variable precision.
-% n_ruben   term-count cap passed through to the Ruben-series density
-%           derivatives used on the s==0 route (see gx2_dens_deriv, gx2_ruben).
-%           Only affects that route; ignored when s~=0. Default=1e3.
+% precision only 'basic' (double precision, the default) is supported.
 %
 % Outputs:
 % grad      struct mirroring quad, holding the cdf gradient:
@@ -79,19 +76,16 @@ groups={'q2','q1','q0'};
 addParameter(parser,'wrt',groups,@(c) iscell(c) && all(ismember(lower(c),groups)));
 addParameter(parser,'AbsTol',1e-10,@(x) isreal(x) && isscalar(x) && (x>=0));
 addParameter(parser,'RelTol',1e-6,@(x) isreal(x) && isscalar(x) && (x>=0));
-addParameter(parser,'precision','basic',@(x) strcmpi(x,'basic')||strcmpi(x,'vpa'));
-addParameter(parser,'n_ruben',1e3,@(x) isscalar(x) && (x>0) && (x==round(x)));
+addParameter(parser,'precision','basic',@(x) strcmpi(x,'basic'));   % 'vpa' not supported
 parse(parser,x,mu,v,quad,varargin{:});
 
 wrt=parser.Results.wrt;
 AbsTol=parser.Results.AbsTol;
 RelTol=parser.Results.RelTol;
-precision=parser.Results.precision;
-n_ruben=parser.Results.n_ruben;
 
 want_hess=nargout>=2;
 [raw_grad,raw_hess,at_cusp,cusp_scale,inversion_grad_hess,nx]= ...
-    boundary_raw(x,mu,v,quad,wrt,want_hess,AbsTol,RelTol,precision,n_ruben);
+    boundary_raw(x,mu,v,quad,wrt,want_hess,AbsTol,RelTol);
 
 % Override only the exact-cusp points, via an independent always-valid
 % method (see resolve_cusp_terms) -- every other point, and every other

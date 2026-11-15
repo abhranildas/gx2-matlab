@@ -15,7 +15,7 @@ function [p,errflag]=gx2_imhof(x,w,k,l,s,m,varargin)
 % head over the first period (capped at 2*pi/sd in u), integrated plainly,
 % and a tail integrated cycle by cycle with the partial sums extrapolated by
 % Wynn's epsilon algorithm, as QUADPACK's Fourier-integral routine QAWF does
-% (see fourier_split below); this is vectorized over all x points. All
+% (see gx2_osc_integral); this is vectorized over all x points. All
 % quadratures run in the dimensionless variable sd*u, so results do not
 % depend on the units of x.
 %
@@ -73,37 +73,7 @@ failed=false(size(cs));
 % compute the integral
 if strcmpi(parser.Results.precision,'basic')
     H=@(v) gx2_imhof_amplitude(v/sd,w',k',l',s,output,idx,nx)/sd;
-    converged=false;
-    if numel(cs)>1
-        % fast path for many x: one plain adaptive quadrature over (0,inf)
-        % shared by all x, so H is computed once per node. It handles most
-        % cases, and when it doesn't, it reports so.
-        [imhof_integral,converged]=quiet_integral(@(v) real(H(v).*exp(-1i*cs*v)),0,inf,AbsTol,RelTol);
-    end
-    if ~converged
-        imhof_integral=nan(size(cs));
-        % within 2 sd of m (|c|<=1) the oscillation is slow over the
-        % integrand's mass, so a plain quadrature over (0,inf) usually works
-        % and is more accurate (and at tiny c the cycles of fourier_split
-        % become absurdly long); try it first, and split only where it fails
-        split=abs(cs)>1;
-        for i=find(~split)
-            [imhof_integral(i),converged]=quiet_integral(@(v) real(H(v).*exp(-1i*cs(i)*v)),0,inf,AbsTol,RelTol);
-            failed(i)=~converged;
-            split(i)=~converged && cs(i)~=0;
-        end
-        % all points to split together; if the shared quadratures do not
-        % converge, redo them one at a time so that only the points that
-        % truly fail are flagged
-        if any(split)
-            [imhof_integral(split),failed(split),converged]=fourier_split(H,cs(split),AbsTol,RelTol);
-            if ~converged && nnz(split)>1
-                for i=find(split)
-                    [imhof_integral(i),failed(i)]=fourier_split(H,cs(i),AbsTol,RelTol);
-                end
-            end
-        end
-    end
+    [imhof_integral,failed]=gx2_osc_integral(H,cs,AbsTol,RelTol);
     if any(failed)
         warning('gx2:imhofNoConvergence',...
             'Imhof integral did not reach the requested accuracy at %d of %d point(s); these are flagged in errflag.',...
@@ -161,79 +131,4 @@ if any(errflag(:))
 end
 errflag=errflag|failed;
 
-end
-
-function [I,failed,converged]=fourier_split(H,c,AbsTol,RelTol)
-% Integrals over v in (0,inf) of real(H(v)*exp(-1i*c*v)), for a row vector
-% of nonzero c, in the dimensionless variable of gx2_imhof (integrand mass
-% at v~1); failed flags points whose integral did not reach the requested
-% accuracy, and converged is false if the shared quadratures did not.
-%
-% With c~=0 the integrand oscillates with period 2*pi/|c| while its
-% amplitude H may decay as slowly as a power of v (e.g. when some weights
-% are tiny, the integrand only stops oscillating at v of order sd/min|w|).
-% So we integrate a head (0,v0) plainly, and the tail the way QUADPACK's
-% QAWF does (MATLAB has no built-in equivalent): over successive cycles,
-% each an odd number of half-periods long so that the cycle integrals
-% alternate in sign, then extrapolate their partial sums with Wynn's epsilon
-% algorithm. As in QAWF, a cycle is (2*floor(|c|)+1) half-periods, i.e.
-% about 2*pi long for |c|>=1, and 50 cycles are used. The head is one
-% period, but no longer than 2*pi, so that it covers the integrand's mass
-% even when x is near m (tiny c). The heads of all points, and all cycles of
-% all points, are each integrated in one vectorized quadrature, over a
-% variable t in (0,1) scaled to each point's interval.
-n_cycles=50;
-v0=2*pi./max(abs(c),1);
-[head,head_ok]=quiet_integral(@(t) real(H(v0*t).*exp(-1i*c.*v0*t)).*v0,0,1,AbsTol,RelTol);
-L=(2*floor(abs(c))+1)*pi./abs(c);
-starts=v0+(0:n_cycles-1)'*L;      % n_cycles x numel(c)
-cycle=@(t) real(reshape(H(reshape(starts+t*L,1,[])),size(starts)).*exp(-1i*c.*(starts+t*L))).*L;
-[cycle_integrals,cycles_ok]=quiet_integral(cycle,0,1,AbsTol/n_cycles,RelTol);
-converged=head_ok && cycles_ok;
-I=nan(size(c)); failed=false(size(c));
-for i=1:numel(c)
-    [tail,err]=wynn_epsilon(cumsum(cycle_integrals(:,i)));
-    I(i)=head(i)+tail;
-    failed(i)=~converged || err>max(AbsTol,RelTol*abs(I(i)));
-end
-end
-
-function [val,err]=wynn_epsilon(S)
-% Wynn's epsilon algorithm: the extrapolated limit of the sequence of
-% partial sums S, and an error estimate. Each even column of the epsilon
-% table is a sequence of estimates of the limit; we return the last entry of
-% the even column that changed least from the previous even column.
-n=numel(S);
-val=S(end);
-err=abs(S(end)-S(max(end-1,1)));
-prev=zeros(1,n+1);         % column -1
-cur=S(:)';                 % column 0
-last_even=cur(end);
-for col=1:n-1
-    nxt=prev(2:numel(cur))+1./diff(cur);
-    if ~all(isfinite(nxt)), break, end % sequence already converged exactly
-    prev=cur; cur=nxt;
-    if mod(col,2)==0
-        e=abs(cur(end)-last_even);
-        if e<err, val=cur(end); err=e; end
-        last_even=cur(end);
-    end
-end
-end
-
-function [q,converged]=quiet_integral(f,a,b,AbsTol,RelTol)
-% integral (array-valued) with its convergence warnings captured instead of
-% shown: converged is false if integral warned that it did not reach the
-% requested accuracy.
-ids={'MATLAB:integral:MaxIntervalCountReached','MATLAB:integral:MinStepSize',...
-    'MATLAB:integral:NonFiniteValue'};
-state=warning;
-cellfun(@(id) warning('off',id),ids);
-[last_msg,last_id]=lastwarn;
-lastwarn('');
-q=integral(f,a,b,'AbsTol',AbsTol,'RelTol',RelTol,'ArrayValued',true);
-[~,id]=lastwarn;
-converged=~any(strcmp(id,ids));
-warning(state);
-if isempty(id), lastwarn(last_msg,last_id); end
 end

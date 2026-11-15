@@ -45,7 +45,7 @@ function [grad,hess]=norm_err_grad_bd(mu0,v0,mu1,v1,quad,varargin)
 %
 % Optional name-value inputs:
 % p0,p1     class priors (weights on each class's error term). Default 0.5 each.
-% wrt, AbsTol, RelTol, precision, n_ruben
+% wrt, AbsTol, RelTol, precision
 %           forwarded to CDF_GRAD_BD's underlying computation for
 %           each class -- see there for defaults and meaning.
 %
@@ -70,8 +70,7 @@ addParameter(parser,'p1',0.5,@(x) isreal(x) && isscalar(x));
 addParameter(parser,'wrt',groups,@(c) iscell(c) && all(ismember(lower(c),groups)));
 addParameter(parser,'AbsTol',1e-10,@(x) isreal(x) && isscalar(x) && (x>=0));
 addParameter(parser,'RelTol',1e-6,@(x) isreal(x) && isscalar(x) && (x>=0));
-addParameter(parser,'precision','basic',@(x) strcmpi(x,'basic')||strcmpi(x,'vpa'));
-addParameter(parser,'n_ruben',1e3,@(x) isscalar(x) && (x>0) && (x==round(x)));
+addParameter(parser,'precision','basic',@(x) strcmpi(x,'basic'));   % 'vpa' not supported
 parse(parser,mu0,v0,mu1,v1,quad,varargin{:});
 
 p0=parser.Results.p0;
@@ -79,12 +78,10 @@ p1=parser.Results.p1;
 wrt=parser.Results.wrt;
 AbsTol=parser.Results.AbsTol;
 RelTol=parser.Results.RelTol;
-precision=parser.Results.precision;
-n_ruben=parser.Results.n_ruben;
 
 want_hess=nargout>=2;
-[g0,h0,at_cusp0,scale0,inv0,nx]=boundary_raw(0,mu0,v0,quad,wrt,want_hess,AbsTol,RelTol,precision,n_ruben);
-[g1,h1,at_cusp1,scale1,inv1,~ ]=boundary_raw(0,mu1,v1,quad,wrt,want_hess,AbsTol,RelTol,precision,n_ruben);
+[g0,h0,at_cusp0,scale0,inv0,nx]=boundary_raw(0,mu0,v0,quad,wrt,want_hess,AbsTol,RelTol);
+[g1,h1,at_cusp1,scale1,inv1,~ ]=boundary_raw(0,mu1,v1,quad,wrt,want_hess,AbsTol,RelTol);
 
 raw_grad=struct();
 gfields=fieldnames(g1);

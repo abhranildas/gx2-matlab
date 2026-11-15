@@ -416,7 +416,6 @@ function nv = tol_to_namevalue(tol)
 nv = {};
 if isfield(tol,'AbsTol'), nv = [nv, {'AbsTol', tol.AbsTol}]; end
 if isfield(tol,'RelTol'), nv = [nv, {'RelTol', tol.RelTol}]; end
-if isfield(tol,'n_ruben'), nv = [nv, {'n_ruben', tol.n_ruben}]; end
 end
 
 function [err_v, grad_flat_v, hess_flat_v] = analytic_stage(mu0, v0, mu1, v1, quad, p0, p1, tol, D)
@@ -485,7 +484,7 @@ catch ME
     return;
 end
 
-tight = struct('AbsTol', 1e-12, 'RelTol', 1e-10, 'n_ruben', 5000);
+tight = struct('AbsTol', 1e-12, 'RelTol', 1e-10);
 stages = {'ground_truth','default_tol','fd_grad','fd_hess', ...
     'naive_qda_ground_truth','naive_qda_default_tol','naive_qda_fd_grad'};
 
@@ -540,7 +539,7 @@ switch stage
     case 'ground_truth'
         if strcmp(status,'ok')
             result.ground_truth = struct('status',status,'time_s',elapsed,'err',value.err, ...
-                'grad',value.grad,'hess',value.hess,'tol','AbsTol=1e-12, RelTol=1e-10, n_ruben=5000');
+                'grad',value.grad,'hess',value.hess,'tol','AbsTol=1e-12, RelTol=1e-10');
         else
             result.ground_truth = struct('status',status,'time_s',elapsed,'detail',value);
         end
@@ -567,7 +566,7 @@ switch stage
         end
     case {'naive_qda_ground_truth','naive_qda_default_tol'}
         if strcmp(stage,'naive_qda_ground_truth')
-            fkey = 'ground_truth'; tol = 'AbsTol=1e-12, RelTol=1e-10, n_ruben=5000';
+            fkey = 'ground_truth'; tol = 'AbsTol=1e-12, RelTol=1e-10';
         else
             fkey = 'default_tol'; tol = 'AbsTol=1e-10, RelTol=1e-6 (package defaults)';
         end
