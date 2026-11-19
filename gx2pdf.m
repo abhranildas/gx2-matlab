@@ -113,7 +113,7 @@ addOptional(parser,'side','lower',@(x) strcmpi(x,'lower') || strcmpi(x,'upper') 
 addParameter(parser,'method','auto');
 addParameter(parser,'AbsTol',1e-10,@(x) isreal(x) && isscalar(x) && (x>=0));
 addParameter(parser,'RelTol',1e-6,@(x) isreal(x) && isscalar(x) && (x>=0));
-[~,v]=gx2stat(w,k,l,s,m);
+[mu,v]=gx2stat(w,k,l,s,m);
 addParameter(parser,'diff',false,@islogical);
 addParameter(parser,'dx',sqrt(v)/1e4,@(x) isreal(x) && isscalar(x) && (x>=0)); % default derivative step-size is sd/100.
 parse(parser,x,w,k,l,s,m,varargin{:});
@@ -129,7 +129,11 @@ if strcmpi(x,'full')
     method='ifft';
 end
 
-if ~diff_flag
+% zero variance: X is a point mass at its mean (see gx2cdf)
+if v==0 && ~strcmpi(x,'full')
+    f=zeros(size(x));
+    f(x==mu)=inf;
+elseif ~diff_flag
     if strcmpi(method,'auto')
         w_unique=unique(w);
         if ~s && isscalar(w_unique) && ~strcmpi(x,'full')

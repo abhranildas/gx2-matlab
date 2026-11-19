@@ -122,7 +122,17 @@ if strcmpi(x,'full')
     method='ifft';
 end
 
-if strcmpi(method,'auto')
+% zero variance: X is a point mass at its mean (e.g. all weights zero and no
+% normal term), which the methods, assuming a spread-out distribution, do not
+% handle
+[mu,v]=gx2stat(w,k,l,s,m);
+if v==0 && ~strcmpi(x,'full')
+    if strcmpi(side,'lower')
+        p=double(x>=mu);
+    else
+        p=double(x<mu);
+    end
+elseif strcmpi(method,'auto')
     w_unique=unique(w);
     if ~s && isscalar(w_unique) % no s and only one unique weight
         % ncx2 fallback

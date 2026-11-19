@@ -2,4 +2,4 @@
 *.mltbx
 *.prj
 tinker.m
-tests/bench_out
+tests/bench_out*/

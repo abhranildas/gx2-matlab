@@ -86,7 +86,13 @@ L=(2*floor(abs(c))+1)*pi./abs(c);
 starts=v0+(0:n_cycles-1)'*L;      % n_cycles x nc
 cycle=@(t) real(reshape(H(reshape(starts+t*L,1,[])),P,n_cycles,nc) ...
     .*reshape(exp(-1i*c.*(starts+t*L)),1,n_cycles,nc)).*reshape(L,1,1,nc);
-[cycle_integrals,cycles_ok]=quiet_integral(cycle,0,1,AbsTol/n_cycles,RelTol);
+% integral tests each entry against its own tolerance, so entries near zero
+% would need AbsTol/n_cycles absolutely, which roundoff can make
+% unreachable. As in the Python port (quad_vec, which tests the norm of the
+% whole error array), we scale the absolute tolerance to the largest
+% entry, taking the head, which holds the integrand's mass, as the scale.
+cycle_AbsTol=max(AbsTol,RelTol*max(abs(head(:))))/n_cycles;
+[cycle_integrals,cycles_ok]=quiet_integral(cycle,0,1,cycle_AbsTol,RelTol);
 converged=head_ok && cycles_ok;
 I=nan(P,nc); failed=false(1,nc);
 for i=1:nc
